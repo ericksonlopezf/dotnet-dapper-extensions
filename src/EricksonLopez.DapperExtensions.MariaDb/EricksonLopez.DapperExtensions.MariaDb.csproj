@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <AssemblyName>EricksonLopez.DapperExtensions.MariaDb</AssemblyName>
+    <RootNamespace>EricksonLopez.DapperExtensions.MariaDb</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>EricksonLopez.DapperExtensions.MariaDb</PackageId>
+    <Description>High-performance Dapper extensions for MariaDB. Bulk insert/upsert via multi-row VALUES, paginated queries returning PagedList&lt;T&gt;, transaction helpers, and JSON type handler. Designed for enterprise .NET applications using Clean Architecture.</Description>
+    <PackageTags>$(CommonPackageTags);mariadb;mysqlconnector;bulk-insert;upsert;pagination;json</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="MySqlConnector" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EricksonLopez.DapperExtensions\EricksonLopez.DapperExtensions.csproj" />
+    <PackageReference Include="EricksonLopez.Pagination.Abstractions" />
+    <PackageReference Include="EricksonLopez.Pagination" />
+  </ItemGroup>
+</Project>

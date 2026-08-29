@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <AssemblyName>EricksonLopez.DapperExtensions.SqlServer</AssemblyName>
+    <RootNamespace>EricksonLopez.DapperExtensions.SqlServer</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>EricksonLopez.DapperExtensions.SqlServer</PackageId>
+    <Description>High-performance Dapper extensions for SQL Server. Bulk insert via SqlBulkCopy, paginated queries returning PagedList&lt;T&gt; with OFFSET FETCH, transaction helpers, and JSON type handler. Designed for enterprise .NET applications using Clean Architecture.</Description>
+    <PackageTags>$(CommonPackageTags);sqlserver;sql-server;mssql;t-sql;bulk-insert;sqlbulkcopy;pagination;json</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EricksonLopez.DapperExtensions\EricksonLopez.DapperExtensions.csproj" />
+    <PackageReference Include="EricksonLopez.Pagination.Abstractions" />
+    <PackageReference Include="EricksonLopez.Pagination" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="EricksonLopez.DapperExtensions.SqlServer.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+</Project>

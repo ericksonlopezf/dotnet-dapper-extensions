@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <AssemblyName>EricksonLopez.DapperExtensions.DependencyInjection</AssemblyName>
+    <RootNamespace>EricksonLopez.DapperExtensions.DependencyInjection</RootNamespace>
+    <PackageId>EricksonLopez.DapperExtensions.DependencyInjection</PackageId>
+    <Description>Dependency Injection extensions for EricksonLopez.DapperExtensions. Provides seamless registration for Dapper type handlers, transient error detectors, and resilience configurations in ASP.NET Core and .NET Generic Host.</Description>
+    <PackageTags>$(CommonPackageTags);dependency-injection;aspnet-core;service-collection;host</PackageTags>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EricksonLopez.DapperExtensions\EricksonLopez.DapperExtensions.csproj" />
+  </ItemGroup>
+
+</Project>

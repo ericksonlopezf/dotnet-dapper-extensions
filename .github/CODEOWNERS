@@ -1,0 +1,21 @@
+# Global code owners
+* @ericksonlopezf
+
+# Build & CI/CD infrastructure
+/.github/ @ericksonlopezf
+/Directory.Build.props @ericksonlopezf
+/Directory.Packages.props @ericksonlopezf
+/global.json @ericksonlopezf
+
+# Documentation & Architecture Decisions
+/docs/ @ericksonlopezf
+/README.md @ericksonlopezf
+/CHANGELOG.md @ericksonlopezf
+/CONTRIBUTING.md @ericksonlopezf
+/SECURITY.md @ericksonlopezf
+
+# Core Library & Providers
+/src/ @ericksonlopezf
+/tests/ @ericksonlopezf
+/benchmarks/ @ericksonlopezf
+/samples/ @ericksonlopezf

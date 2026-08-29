@@ -1,0 +1,16 @@
+{
+  "stryker-config": {
+    "project": "EricksonLopez.DapperExtensions.DependencyInjection.csproj",
+    "reporters": [
+      "ClearText",
+      "Progress",
+      "Json"
+    ],
+    "thresholds": {
+      "high": 100,
+      "low": 98,
+      "break": 95
+    },
+    "concurrency": 6
+  }
+}

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <AssemblyName>EricksonLopez.DapperExtensions.PostgreSql</AssemblyName>
+    <RootNamespace>EricksonLopez.DapperExtensions.PostgreSql</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>EricksonLopez.DapperExtensions.PostgreSql</PackageId>
+    <Description>High-performance Dapper extensions for PostgreSQL. Bulk insert and upsert via UNNEST (10-50x faster than row-by-row), paginated queries returning PagedList&lt;T&gt;, transaction helpers, and JSONB type handler. Designed for enterprise .NET applications using Clean Architecture.</Description>
+    <PackageTags>$(CommonPackageTags);postgresql;npgsql;postgres;bulk-insert;upsert;unnest;pagination;jsonb</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EricksonLopez.DapperExtensions\EricksonLopez.DapperExtensions.csproj" />
+    <PackageReference Include="EricksonLopez.Pagination.Abstractions" />
+    <PackageReference Include="EricksonLopez.Pagination" />
+  </ItemGroup>
+</Project>

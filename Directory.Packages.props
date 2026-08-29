@@ -1,0 +1,52 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Core & Integrations -->
+    <PackageVersion Include="Dapper" Version="2.1.35" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Resilience" Version="9.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.0" />
+    <PackageVersion Include="OpenTelemetry.Api" Version="1.11.2" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+
+    <!-- EricksonLopez Ecosystem -->
+    <PackageVersion Include="EricksonLopez.Pagination" Version="1.0.0" />
+    <PackageVersion Include="EricksonLopez.Pagination.Abstractions" Version="1.0.0" />
+    <PackageVersion Include="EricksonLopez.Resilience" Version="1.0.0" />
+    <PackageVersion Include="EricksonLopez.Resilience.Abstractions" Version="1.0.0" />
+    <PackageVersion Include="EricksonLopez.Resilience.Polly" Version="1.0.0" />
+    <PackageVersion Include="EricksonLopez.SqlBuilder" Version="1.0.0" />
+    <PackageVersion Include="EricksonLopez.SqlBuilder.Abstractions" Version="1.0.0" />
+    <PackageVersion Include="EricksonLopez.SqlBuilder.Sqlite" Version="1.0.0" />
+
+    <!-- DB Providers -->
+    <PackageVersion Include="Npgsql" Version="8.0.6" />
+    <PackageVersion Include="MySqlConnector" Version="2.4.0" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.7.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.2" />
+
+    <!-- Testing & Benchmarks -->
+    <PackageVersion Include="AwesomeAssertions" Version="9.5.0" />
+    <PackageVersion Include="NSubstitute" Version="6.0.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+
+    <!-- Testcontainers -->
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="3.8.0" />
+    <PackageVersion Include="Testcontainers.MySql" Version="3.8.0" />
+    <PackageVersion Include="Testcontainers.MariaDb" Version="3.8.0" />
+    <PackageVersion Include="Testcontainers.SqlServer" Version="3.8.0" />
+    <PackageVersion Include="Testcontainers.Oracle" Version="3.8.0" />
+    <PackageVersion Include="Testcontainers.Sqlite" Version="3.8.0" />
+  </ItemGroup>
+</Project>

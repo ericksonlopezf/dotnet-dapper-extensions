@@ -1,0 +1,26 @@
+{
+  "stryker-config": {
+    "project": "EricksonLopez.DapperExtensions.SqlServer.csproj",
+    "reporters": [
+      "ClearText",
+      "Progress",
+      "Json"
+    ],
+    "concurrency": 6,
+    "additional-timeout": 15000,
+    "thresholds": {
+      "high": 100,
+      "low": 98,
+      "break": 95
+    },
+    "test-case-filter": "Category!=Integration",
+    "mutate": [
+      "**/*.cs",
+      "!**/bin/**",
+      "!**/obj/**"
+    ],
+    "ignore-methods": [
+      "*ConfigureAwait"
+    ]
+  }
+}

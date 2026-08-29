@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <AssemblyName>EricksonLopez.DapperExtensions.Oracle</AssemblyName>
+    <RootNamespace>EricksonLopez.DapperExtensions.Oracle</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>EricksonLopez.DapperExtensions.Oracle</PackageId>
+    <Description>High-performance Dapper extensions for Oracle Database. Bulk insert via INSERT ALL, paginated queries returning PagedList&lt;T&gt; with OFFSET FETCH NEXT, transaction helpers, and JSON type handler. Designed for enterprise .NET applications using Clean Architecture.</Description>
+    <PackageTags>$(CommonPackageTags);oracle;oracle-database;odp-net;bulk-insert;pagination;json</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EricksonLopez.DapperExtensions\EricksonLopez.DapperExtensions.csproj" />
+    <PackageReference Include="EricksonLopez.Pagination.Abstractions" />
+    <PackageReference Include="EricksonLopez.Pagination" />
+  </ItemGroup>
+</Project>

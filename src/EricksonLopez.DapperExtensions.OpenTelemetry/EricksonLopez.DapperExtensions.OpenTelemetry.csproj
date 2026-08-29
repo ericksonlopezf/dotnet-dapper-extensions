@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <AssemblyName>EricksonLopez.DapperExtensions.OpenTelemetry</AssemblyName>
+    <RootNamespace>EricksonLopez.DapperExtensions.OpenTelemetry</RootNamespace>
+    <PackageId>EricksonLopez.DapperExtensions.OpenTelemetry</PackageId>
+    <Description>OpenTelemetry tracing, metrics, and activity instrumentation for EricksonLopez.DapperExtensions.</Description>
+    <PackageTags>$(CommonPackageTags);opentelemetry;tracing;metrics;observability;telemetry</PackageTags>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry.Api" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EricksonLopez.DapperExtensions\EricksonLopez.DapperExtensions.csproj" />
+  </ItemGroup>
+
+</Project>
