@@ -1,0 +1,10 @@
+<Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
+  <Application>
+    <Assembly Name="Dapper">
+      <Type Name="Dapper.SqlMapper+TypeHandlerCache`1[[System.DateOnly, System.Private.CoreLib]]" Dynamic="Required All" />
+      <Type Name="Dapper.SqlMapper+TypeHandlerCache`1[[System.Nullable`1[[System.DateOnly, System.Private.CoreLib]], System.Private.CoreLib]]" Dynamic="Required All" />
+      <Type Name="Dapper.SqlMapper+TypeHandlerCache`1[[System.TimeOnly, System.Private.CoreLib]]" Dynamic="Required All" />
+      <Type Name="Dapper.SqlMapper+TypeHandlerCache`1[[System.Nullable`1[[System.TimeOnly, System.Private.CoreLib]], System.Private.CoreLib]]" Dynamic="Required All" />
+    </Assembly>
+  </Application>
+</Directives>

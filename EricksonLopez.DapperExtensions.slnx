@@ -1,0 +1,50 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks\EricksonLopez.DapperExtensions.PostgreSql.Benchmarks\EricksonLopez.DapperExtensions.PostgreSql.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="CHANGELOG.md" />
+    <File Path="CODE_OF_CONDUCT.md" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="ROADMAP.md" />
+    <File Path="SECURITY.md" />
+    <File Path="SUPPORT.md" />
+    <File Path="global.json" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src\EricksonLopez.DapperExtensions\EricksonLopez.DapperExtensions.csproj" />
+    <Project Path="src\EricksonLopez.DapperExtensions.DependencyInjection\EricksonLopez.DapperExtensions.DependencyInjection.csproj" />
+    <Project Path="src\EricksonLopez.DapperExtensions.HealthChecks\EricksonLopez.DapperExtensions.HealthChecks.csproj" />
+    <Project Path="src\EricksonLopez.DapperExtensions.MariaDb\EricksonLopez.DapperExtensions.MariaDb.csproj" />
+    <Project Path="src\EricksonLopez.DapperExtensions.MySql\EricksonLopez.DapperExtensions.MySql.csproj" />
+    <Project Path="src\EricksonLopez.DapperExtensions.OpenTelemetry\EricksonLopez.DapperExtensions.OpenTelemetry.csproj" />
+    <Project Path="src\EricksonLopez.DapperExtensions.Oracle\EricksonLopez.DapperExtensions.Oracle.csproj" />
+    <Project Path="src\EricksonLopez.DapperExtensions.PostgreSql\EricksonLopez.DapperExtensions.PostgreSql.csproj" />
+    <Project Path="src\EricksonLopez.DapperExtensions.SourceGenerators\EricksonLopez.DapperExtensions.SourceGenerators.csproj" />
+    <Project Path="src\EricksonLopez.DapperExtensions.Sqlite\EricksonLopez.DapperExtensions.Sqlite.csproj" />
+    <Project Path="src\EricksonLopez.DapperExtensions.SqlServer\EricksonLopez.DapperExtensions.SqlServer.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples\EricksonLopez.DapperExtensions.Showcase\EricksonLopez.DapperExtensions.Showcase.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests\EricksonLopez.DapperExtensions.DependencyInjection.Tests\EricksonLopez.DapperExtensions.DependencyInjection.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.HealthChecks.Tests\EricksonLopez.DapperExtensions.HealthChecks.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.MariaDb.Tests\EricksonLopez.DapperExtensions.MariaDb.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.MySql.Tests\EricksonLopez.DapperExtensions.MySql.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.OpenTelemetry.Tests\EricksonLopez.DapperExtensions.OpenTelemetry.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.Oracle.Tests\EricksonLopez.DapperExtensions.Oracle.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.PostgreSql.Tests\EricksonLopez.DapperExtensions.PostgreSql.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.SourceGenerators.Tests\EricksonLopez.DapperExtensions.SourceGenerators.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.Sqlite.Tests\EricksonLopez.DapperExtensions.Sqlite.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.SqlServer.Tests\EricksonLopez.DapperExtensions.SqlServer.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.Tests\EricksonLopez.DapperExtensions.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.AotSmokeTest\EricksonLopez.DapperExtensions.AotSmokeTest.csproj" />
+  </Folder>
+</Solution>

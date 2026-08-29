@@ -1,0 +1,20 @@
+{
+  "stryker-config": {
+    "project": "EricksonLopez.DapperExtensions.OpenTelemetry.csproj",
+    "reporters": [
+      "ClearText",
+      "Progress",
+      "Json"
+    ],
+    "thresholds": {
+      "high": 100,
+      "low": 98,
+      "break": 95
+    },
+    "concurrency": 6,
+    "ignore-methods": [
+      "ConfigureAwait",
+      "Stop"
+    ]
+  }
+}

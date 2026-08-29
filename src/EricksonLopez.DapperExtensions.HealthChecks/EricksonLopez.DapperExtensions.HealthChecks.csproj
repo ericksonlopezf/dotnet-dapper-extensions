@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <AssemblyName>EricksonLopez.DapperExtensions.HealthChecks</AssemblyName>
+    <RootNamespace>EricksonLopez.DapperExtensions.HealthChecks</RootNamespace>
+    <PackageId>EricksonLopez.DapperExtensions.HealthChecks</PackageId>
+    <Description>Database connectivity health checks for EricksonLopez.DapperExtensions across relational providers.</Description>
+    <PackageTags>$(CommonPackageTags);health-checks;diagnostics;monitoring;aspnet-core</PackageTags>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EricksonLopez.DapperExtensions\EricksonLopez.DapperExtensions.csproj" />
+  </ItemGroup>
+
+</Project>

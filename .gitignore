@@ -1,0 +1,100 @@
+## ====================================================================
+## Build & Compilation Outputs
+## ====================================================================
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Aa]rtifacts/
+Generated_Code/
+Generated Files/
+.dotnet/
+
+## ====================================================================
+## NuGet Packages & Artifacts
+## ====================================================================
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+packages/
+project.lock.json
+project.assets.json
+
+## ====================================================================
+## Testing, Coverage & Mutation Testing
+## ====================================================================
+[Tt]est[Rr]esults/
+[Cc]overage/
+[Cc]overagereport/
+StrykerOutput/
+StrykerReports/
+BenchmarkDotNet.Artifacts/
+*.coverage
+*.coveragexml
+*.cobertura.xml
+coverage.cobertura.xml
+*.opencover.xml
+
+## ====================================================================
+## Code Quality & Static Analysis (SonarCloud/SonarQube)
+## ====================================================================
+.sonarqube/
+.scannerwork/
+
+## ====================================================================
+## IDEs & Editors
+## ====================================================================
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains Rider & ReSharper
+.idea/
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+## ====================================================================
+## Environment, Secrets & Local Settings
+## ====================================================================
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.*.local.json
+appsettings.*.Local.json
+appsettings.Local.json
+appsettings.Development.json
+
+## ====================================================================
+## Logs & Diagnostics
+## ====================================================================
+*.log
+[Ll]og/
+[Ll]ogs/
+
+## ====================================================================
+## OS & Temporary Files
+## ====================================================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+*.tmp
+*.bak
+*.swp
+*~
+.#*
+*.orig
+*.rej

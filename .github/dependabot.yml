@@ -1,0 +1,51 @@
+# Dependabot configuration for EricksonLopez.DapperExtensions
+# Automates dependency version updates for NuGet packages and GitHub Actions.
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+
+updates:
+  # NuGet ecosystem — Central Package Management (Directory.Packages.props)
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "nuget"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      microsoft-extensions:
+        patterns:
+          - "Microsoft.Extensions.*"
+      testcontainers:
+        patterns:
+          - "Testcontainers.*"
+      opentelemetry:
+        patterns:
+          - "OpenTelemetry.*"
+      codeanalysis:
+        patterns:
+          - "Microsoft.CodeAnalysis.*"
+
+  # GitHub Actions ecosystem
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore"
+      include: "scope"

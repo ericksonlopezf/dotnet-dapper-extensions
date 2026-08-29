@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions\EricksonLopez.DapperExtensions.csproj" />
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.DependencyInjection\EricksonLopez.DapperExtensions.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.HealthChecks\EricksonLopez.DapperExtensions.HealthChecks.csproj" />
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.OpenTelemetry\EricksonLopez.DapperExtensions.OpenTelemetry.csproj" />
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.PostgreSql\EricksonLopez.DapperExtensions.PostgreSql.csproj" />
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.SqlServer\EricksonLopez.DapperExtensions.SqlServer.csproj" />
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.MySql\EricksonLopez.DapperExtensions.MySql.csproj" />
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.MariaDb\EricksonLopez.DapperExtensions.MariaDb.csproj" />
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.Oracle\EricksonLopez.DapperExtensions.Oracle.csproj" />
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.Sqlite\EricksonLopez.DapperExtensions.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.SourceGenerators\EricksonLopez.DapperExtensions.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.Resilience" />
+    <PackageReference Include="OpenTelemetry.Api" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,17 @@
+{
+  "stryker-config": {
+    "project": "EricksonLopez.DapperExtensions.SourceGenerators.csproj",
+    "reporters": [
+      "ClearText",
+      "Progress",
+      "Json"
+    ],
+    "concurrency": 6,
+    "additional-timeout": 30000,
+    "thresholds": {
+      "high": 100,
+      "low": 98,
+      "break": 95
+    }
+  }
+}

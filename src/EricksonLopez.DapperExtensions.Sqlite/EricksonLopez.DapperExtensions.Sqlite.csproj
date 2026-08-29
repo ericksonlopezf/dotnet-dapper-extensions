@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <AssemblyName>EricksonLopez.DapperExtensions.Sqlite</AssemblyName>
+    <RootNamespace>EricksonLopez.DapperExtensions.Sqlite</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>EricksonLopez.DapperExtensions.Sqlite</PackageId>
+    <Description>High-performance Dapper extensions for SQLite. Bulk insert/upsert via multi-row VALUES, paginated queries returning PagedList&lt;T&gt;, transaction helpers, and JSON type handler. Designed for enterprise .NET applications using Clean Architecture.</Description>
+    <PackageTags>$(CommonPackageTags);sqlite;embedded-database;bulk-insert;upsert;pagination;json</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EricksonLopez.DapperExtensions\EricksonLopez.DapperExtensions.csproj" />
+    <PackageReference Include="EricksonLopez.Pagination.Abstractions" />
+    <PackageReference Include="EricksonLopez.Pagination" />
+  </ItemGroup>
+</Project>

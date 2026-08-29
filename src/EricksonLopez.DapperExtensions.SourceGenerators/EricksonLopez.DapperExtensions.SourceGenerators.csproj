@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>EricksonLopez.DapperExtensions.SourceGenerators</AssemblyName>
+    <RootNamespace>EricksonLopez.DapperExtensions.SourceGenerators</RootNamespace>
+    <PackageId>EricksonLopez.DapperExtensions.SourceGenerators</PackageId>
+    <Description>Roslyn source generator for zero-reflection Native AOT IDataReaderMapper implementations in EricksonLopez.DapperExtensions.</Description>
+    <PackageTags>$(CommonPackageTags);source-generator;roslyn;native-aot;aot;code-generation;mapper</PackageTags>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsPackable>true</IsPackable>
+    <IsTrimmable>false</IsTrimmable>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <EnablePackageValidation>false</EnablePackageValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
