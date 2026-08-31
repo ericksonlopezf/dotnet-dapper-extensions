@@ -42,7 +42,7 @@
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
 
     <!-- Testcontainers -->
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="3.8.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.14.0" />
     <PackageVersion Include="Testcontainers.MySql" Version="3.8.0" />
     <PackageVersion Include="Testcontainers.MariaDb" Version="3.8.0" />
     <PackageVersion Include="Testcontainers.SqlServer" Version="3.8.0" />
