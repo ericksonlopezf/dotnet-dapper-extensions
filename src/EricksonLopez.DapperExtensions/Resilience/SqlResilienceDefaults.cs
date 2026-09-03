@@ -44,18 +44,8 @@ public static class SqlResilienceDefaults
         {
             TimeProvider = timeProvider ?? TimeProvider.System
         }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(30)
-            })
-            .AddRetry(new RetryStrategyOptions
-            {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromSeconds(1),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-            })
+            .AddTimeout(CreateStandardTimeoutOptions())
+            .AddRetry(CreateStandardRetryOptions(detector))
             .Build();
     }
 
@@ -84,26 +74,9 @@ public static class SqlResilienceDefaults
         {
             TimeProvider = timeProvider ?? TimeProvider.System
         }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(30)
-            })
-            .AddRetry(new RetryStrategyOptions
-            {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromSeconds(1),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-            })
-            .AddCircuitBreaker(new CircuitBreakerStrategyOptions
-            {
-                FailureRatio = failureRatio,
-                SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
-                MinimumThroughput = minimumThroughput,
-                BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-            })
+            .AddTimeout(CreateStandardTimeoutOptions())
+            .AddRetry(CreateStandardRetryOptions(detector))
+            .AddCircuitBreaker(CreateCircuitBreakerOptions(detector, failureRatio, samplingDuration, minimumThroughput, breakDuration))
             .Build();
     }
 
@@ -128,18 +101,8 @@ public static class SqlResilienceDefaults
         {
             TimeProvider = timeProvider ?? TimeProvider.System
         }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(60)
-            })
-            .AddRetry(new RetryStrategyOptions
-            {
-                MaxRetryAttempts = 5,
-                Delay = TimeSpan.FromMilliseconds(500),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-            })
+            .AddTimeout(CreateAggressiveTimeoutOptions())
+            .AddRetry(CreateAggressiveRetryOptions(detector))
             .Build();
     }
 
@@ -164,18 +127,8 @@ public static class SqlResilienceDefaults
         {
             TimeProvider = timeProvider ?? TimeProvider.System
         }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(120)
-            })
-            .AddRetry(new RetryStrategyOptions
-            {
-                MaxRetryAttempts = 1,
-                Delay = TimeSpan.FromSeconds(5),
-                BackoffType = DelayBackoffType.Constant,
-                UseJitter = false,
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-            })
+            .AddTimeout(CreateConservativeTimeoutOptions())
+            .AddRetry(CreateConservativeRetryOptions(detector))
             .Build();
     }
 
@@ -199,18 +152,8 @@ public static class SqlResilienceDefaults
         {
             TimeProvider = timeProvider ?? TimeProvider.System
         }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(30)
-            })
-            .AddRetry(new RetryStrategyOptions<T>
-            {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromSeconds(1),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
-            })
+            .AddTimeout(CreateStandardTimeoutOptions())
+            .AddRetry(CreateStandardRetryOptions<T>(detector))
             .Build();
     }
 
@@ -244,26 +187,9 @@ public static class SqlResilienceDefaults
         {
             TimeProvider = timeProvider ?? TimeProvider.System
         }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(30)
-            })
-            .AddRetry(new RetryStrategyOptions<T>
-            {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromSeconds(1),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
-            })
-            .AddCircuitBreaker(new CircuitBreakerStrategyOptions<T>
-            {
-                FailureRatio = failureRatio,
-                SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
-                MinimumThroughput = minimumThroughput,
-                BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
-                ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
-            })
+            .AddTimeout(CreateStandardTimeoutOptions())
+            .AddRetry(CreateStandardRetryOptions<T>(detector))
+            .AddCircuitBreaker(CreateCircuitBreakerOptions<T>(detector, failureRatio, samplingDuration, minimumThroughput, breakDuration))
             .Build();
     }
 
@@ -460,6 +386,87 @@ public static class SqlResilienceDefaults
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for Oracle Database.</summary>
     public static IResiliencePipeline ForOracleWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(OracleTransientErrorDetector.Default, "sql-oracle-cb", timeProvider: timeProvider);
+
+    // ─── Internal Strategy Option Factories (Tested directly for Mutation Gates) ──────────────
+
+    internal static TimeoutStrategyOptions CreateStandardTimeoutOptions() => new()
+    {
+        Timeout = TimeSpan.FromSeconds(30)
+    };
+
+    internal static RetryStrategyOptions CreateStandardRetryOptions(ISqlTransientErrorDetector detector) => new()
+    {
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(1),
+        BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true,
+        ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
+    };
+
+    internal static TimeoutStrategyOptions CreateAggressiveTimeoutOptions() => new()
+    {
+        Timeout = TimeSpan.FromSeconds(60)
+    };
+
+    internal static RetryStrategyOptions CreateAggressiveRetryOptions(ISqlTransientErrorDetector detector) => new()
+    {
+        MaxRetryAttempts = 5,
+        Delay = TimeSpan.FromMilliseconds(500),
+        BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true,
+        ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
+    };
+
+    internal static TimeoutStrategyOptions CreateConservativeTimeoutOptions() => new()
+    {
+        Timeout = TimeSpan.FromSeconds(120)
+    };
+
+    internal static RetryStrategyOptions CreateConservativeRetryOptions(ISqlTransientErrorDetector detector) => new()
+    {
+        MaxRetryAttempts = 1,
+        Delay = TimeSpan.FromSeconds(5),
+        BackoffType = DelayBackoffType.Constant,
+        UseJitter = false,
+        ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
+    };
+
+    internal static CircuitBreakerStrategyOptions CreateCircuitBreakerOptions(
+        ISqlTransientErrorDetector detector,
+        double failureRatio,
+        TimeSpan? samplingDuration,
+        int minimumThroughput,
+        TimeSpan? breakDuration) => new()
+    {
+        FailureRatio = failureRatio,
+        SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
+        MinimumThroughput = minimumThroughput,
+        BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
+        ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
+    };
+
+    internal static RetryStrategyOptions<T> CreateStandardRetryOptions<T>(ISqlTransientErrorDetector detector) => new()
+    {
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(1),
+        BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true,
+        ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
+    };
+
+    internal static CircuitBreakerStrategyOptions<T> CreateCircuitBreakerOptions<T>(
+        ISqlTransientErrorDetector detector,
+        double failureRatio,
+        TimeSpan? samplingDuration,
+        int minimumThroughput,
+        TimeSpan? breakDuration) => new()
+    {
+        FailureRatio = failureRatio,
+        SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
+        MinimumThroughput = minimumThroughput,
+        BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
+        ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
+    };
 }
 
 

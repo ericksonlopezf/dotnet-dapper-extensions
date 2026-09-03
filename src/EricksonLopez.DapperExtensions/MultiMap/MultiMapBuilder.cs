@@ -131,6 +131,11 @@ public sealed class MultiMapBuilder<TReturn> where TReturn : class, new()
     }
 
     /// <summary>
+    /// Gets the registered entity combiner delegates. Used for internal pipeline validation.
+    /// </summary>
+    internal IReadOnlyList<Func<object[], TReturn, TReturn>> Combiners => _combiners;
+
+    /// <summary>
     /// Executes the multi-map query and returns an enumerable of hydrated root entities.
     /// </summary>
     /// <param name="connection">The database connection to execute the query on.</param>

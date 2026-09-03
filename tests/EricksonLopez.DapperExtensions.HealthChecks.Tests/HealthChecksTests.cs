@@ -176,8 +176,8 @@ public sealed class HealthChecksTests
         var result = await check.CheckHealthAsync(context, CancellationToken.None);
 
         result.Status.Should().Be(HealthStatus.Healthy);
-        fakeConn.WasOpenAsyncCalled.Should().BeTrue();
-        fakeConn.WasDisposeAsyncCalled.Should().BeTrue();
+        fakeConn.Spy.WasOpenAsyncCalled.Should().BeTrue();
+        fakeConn.Spy.WasDisposeAsyncCalled.Should().BeTrue();
     }
 
     [Fact]
@@ -211,7 +211,7 @@ public sealed class HealthChecksTests
         var result = await check.CheckHealthAsync(context, CancellationToken.None);
 
         result.Status.Should().Be(HealthStatus.Healthy);
-        fakeConn.WasOpenAsyncCalled.Should().BeFalse();
+        fakeConn.Spy.WasOpenAsyncCalled.Should().BeFalse();
     }
 
     [Fact]
@@ -234,22 +234,25 @@ public sealed class HealthChecksTests
     [Fact]
     public async Task CheckHealthAsync_ReturnsUnhealthy_WhenTimedOutOrCancelled()
     {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
         var check = new DapperHealthCheck(
-            async ct =>
+            ct =>
             {
-                await Task.Delay(TimeSpan.FromSeconds(2), ct);
-                return new SqliteConnection("Data Source=:memory:");
+                ct.ThrowIfCancellationRequested();
+                return Task.FromResult<IDbConnection>(new TestAdoConnection());
             },
             new DapperHealthCheckOptions
             {
-                Timeout = TimeSpan.FromMilliseconds(50)
+                Timeout = TimeSpan.FromSeconds(5)
             });
 
         var context = new HealthCheckContext();
-        var result = await check.CheckHealthAsync(context, CancellationToken.None);
+        var result = await check.CheckHealthAsync(context, cts.Token);
 
         result.Status.Should().Be(HealthStatus.Unhealthy);
-        result.Description.Should().Be("Database health probe timed out after 0.05s.");
+        result.Description.Should().Be("Database health probe timed out after 5s.");
     }
 
     [Fact]

@@ -22,6 +22,7 @@ public static class BulkExtensions
     /// <param name="parameters">The array parameters built with <see cref="BulkParameters{T}"/>.</param>
     /// <param name="transaction">The optional transaction to execute within.</param>
     /// <param name="commandTimeout">The optional command timeout in seconds.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains the number of rows affected.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="connection"/> or <paramref name="parameters"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="sql"/> is empty or whitespace</exception>
@@ -30,7 +31,8 @@ public static class BulkExtensions
         string sql,
         NpgsqlParameter[] parameters,
         DbTransaction? transaction = null,
-        int? commandTimeout = null)
+        int? commandTimeout = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentException.ThrowIfNullOrWhiteSpace(sql);
@@ -49,9 +51,9 @@ public static class BulkExtensions
         command.Parameters.AddRange(parameters);
 
         if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync().ConfigureAwait(false);
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        return await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+        return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -62,6 +64,7 @@ public static class BulkExtensions
     /// <param name="parameters">The array parameters built with <see cref="BulkParameters{T}"/>.</param>
     /// <param name="transaction">The optional transaction to execute within.</param>
     /// <param name="commandTimeout">The optional command timeout in seconds.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains the number of rows affected.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="connection"/> or <paramref name="parameters"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="sql"/> is empty or whitespace</exception>
@@ -70,8 +73,9 @@ public static class BulkExtensions
         string sql,
         NpgsqlParameter[] parameters,
         DbTransaction? transaction = null,
-        int? commandTimeout = null)
-        => connection.BulkInsertAsync(sql, parameters, transaction, commandTimeout);
+        int? commandTimeout = null,
+        CancellationToken cancellationToken = default)
+        => connection.BulkInsertAsync(sql, parameters, transaction, commandTimeout, cancellationToken);
 
     /// <summary>
     /// Executes a bulk DELETE statement using PostgreSQL UNNEST array parameters.
@@ -81,6 +85,7 @@ public static class BulkExtensions
     /// <param name="parameters">The array parameters built with <see cref="BulkParameters{T}"/>.</param>
     /// <param name="transaction">The optional transaction to execute within.</param>
     /// <param name="commandTimeout">The optional command timeout in seconds.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains the number of rows affected.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="connection"/> or <paramref name="parameters"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="sql"/> is empty or whitespace</exception>
@@ -89,8 +94,9 @@ public static class BulkExtensions
         string sql,
         NpgsqlParameter[] parameters,
         DbTransaction? transaction = null,
-        int? commandTimeout = null)
-        => connection.BulkInsertAsync(sql, parameters, transaction, commandTimeout);
+        int? commandTimeout = null,
+        CancellationToken cancellationToken = default)
+        => connection.BulkInsertAsync(sql, parameters, transaction, commandTimeout, cancellationToken);
 
     /// <summary>
     /// Executes a bulk UPDATE statement using PostgreSQL UNNEST array parameters.
@@ -100,6 +106,7 @@ public static class BulkExtensions
     /// <param name="parameters">The array parameters built with <see cref="BulkParameters{T}"/>.</param>
     /// <param name="transaction">The optional transaction to execute within.</param>
     /// <param name="commandTimeout">The optional command timeout in seconds.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains the number of rows affected.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="connection"/> or <paramref name="parameters"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="sql"/> is empty or whitespace</exception>
@@ -108,7 +115,8 @@ public static class BulkExtensions
         string sql,
         NpgsqlParameter[] parameters,
         DbTransaction? transaction = null,
-        int? commandTimeout = null)
-        => connection.BulkInsertAsync(sql, parameters, transaction, commandTimeout);
+        int? commandTimeout = null,
+        CancellationToken cancellationToken = default)
+        => connection.BulkInsertAsync(sql, parameters, transaction, commandTimeout, cancellationToken);
 }
 

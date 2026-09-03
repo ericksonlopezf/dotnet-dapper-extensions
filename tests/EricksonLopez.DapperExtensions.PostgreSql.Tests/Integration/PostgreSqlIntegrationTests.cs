@@ -15,6 +15,7 @@ using EricksonLopez.DapperExtensions.PostgreSql.Transactions;
 using EricksonLopez.Pagination.Abstractions;
 using Npgsql;
 using NpgsqlTypes;
+using EricksonLopez.DapperExtensions.Testing.Common;
 using Testcontainers.PostgreSql;
 
 namespace EricksonLopez.DapperExtensions.PostgreSql.Tests.Integration;
@@ -22,9 +23,7 @@ namespace EricksonLopez.DapperExtensions.PostgreSql.Tests.Integration;
 /// <summary>
 /// Integration tests that spin up a real PostgreSQL instance via Docker (Testcontainers).
 /// Requires Docker Desktop or Docker Engine to be running.
-/// </summary>
-[Trait("Category", "Integration")]
-public sealed class PostgreSqlIntegrationTests : IAsyncLifetime
+public sealed class PostgreSqlFixture : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine")
@@ -33,48 +32,55 @@ public sealed class PostgreSqlIntegrationTests : IAsyncLifetime
         .WithPassword("test")
         .Build();
 
-    private NpgsqlConnection _connection = null!;
-
-    // ─── Lifecycle ────────────────────────────────────────────────────────────
+    public string ConnectionString => _container.GetConnectionString();
 
     public async Task InitializeAsync()
     {
         await _container.StartAsync();
 
-        _connection = new NpgsqlConnection(_container.GetConnectionString());
-        await _connection.OpenAsync();
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await connection.ExecuteAsync(BulkTestProduct.Ddl.PostgreSqlProductsTable);
+    }
 
-        await _connection.ExecuteAsync("""
-            CREATE TABLE IF NOT EXISTS products (
-                id          UUID        NOT NULL PRIMARY KEY,
-                name        TEXT        NOT NULL,
-                price       NUMERIC     NOT NULL,
-                is_active   BOOLEAN     NOT NULL DEFAULT true,
-                created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            )
-            """);
+    public async Task DisposeAsync()
+    {
+        await _container.DisposeAsync();
+    }
+}
+
+/// </summary>
+[Trait("Category", "Integration")]
+public sealed class PostgreSqlIntegrationTests : IClassFixture<PostgreSqlFixture>, IAsyncLifetime
+{
+    private readonly PostgreSqlFixture _fixture;
+    private NpgsqlConnection _connection = null!;
+
+    public PostgreSqlIntegrationTests(PostgreSqlFixture fixture)
+    {
+        _fixture = fixture;
+    }
+
+    // ─── Lifecycle ────────────────────────────────────────────────────────────
+
+    public async Task InitializeAsync()
+    {
+        _connection = new NpgsqlConnection(_fixture.ConnectionString);
+        await _connection.OpenAsync();
+        await _connection.ExecuteAsync("DELETE FROM products;");
     }
 
     public async Task DisposeAsync()
     {
         await _connection.DisposeAsync();
-        await _container.DisposeAsync();
     }
-
-    // ─── Helpers ──────────────────────────────────────────────────────────────
-
-    private sealed record ProductRow(Guid Id, string Name, decimal Price, bool IsActive);
-
-    private static IEnumerable<ProductRow> GenerateProducts(int count)
-        => Enumerable.Range(1, count).Select(i =>
-            new ProductRow(Guid.NewGuid(), $"Product {i}", i * 9.99m, i % 2 == 0));
 
     // ─── BulkInsert tests ─────────────────────────────────────────────────────
 
     [Fact]
     public async Task BulkInsertAsync_ShouldInsertAllRows()
     {
-        var products = GenerateProducts(100).ToList();
+        var products = BulkTestProduct.GenerateProducts(100);
 
         var parameters = BulkParameters.From(products)
             .Add("Ids", p => p.Id, NpgsqlDbType.Uuid)
@@ -109,7 +115,7 @@ public sealed class PostgreSqlIntegrationTests : IAsyncLifetime
         var items = new[] { new { Id = 1, Tag = (string?)null }, new { Id = 2, Tag = (string?)"active" } };
 
         // Upsert with updated name/price
-        var products = new[] { new ProductRow(id, "Updated", 99m, true) };
+        var products = new[] { new BulkTestProduct(id, "Updated", 99m, true) };
         var parameters = BulkParameters.From(products)
             .Add("Ids", p => p.Id, NpgsqlDbType.Uuid)
             .Add("Names", p => p.Name, NpgsqlDbType.Text)
@@ -126,7 +132,7 @@ public sealed class PostgreSqlIntegrationTests : IAsyncLifetime
             """,
             parameters);
 
-        var updated = await _connection.QuerySingleAsync<ProductRow>(
+        var updated = await _connection.QuerySingleAsync<BulkTestProduct>(
             "SELECT id, name, price, is_active AS IsActive FROM products WHERE id = @Id",
             new { Id = id });
 
@@ -142,7 +148,7 @@ public sealed class PostgreSqlIntegrationTests : IAsyncLifetime
     public async Task QueryPagedAsync_ShouldReturnCorrectPage()
     {
         // Insert 25 products
-        var products = GenerateProducts(25).ToList();
+        var products = BulkTestProduct.GenerateProducts(25);
         var parameters = BulkParameters.From(products)
             .Add("Ids", p => p.Id, NpgsqlDbType.Uuid)
             .Add("Names", p => p.Name, NpgsqlDbType.Text)
@@ -156,7 +162,7 @@ public sealed class PostgreSqlIntegrationTests : IAsyncLifetime
 
         var pagination = PaginationParameters.Create(page: 2, pageSize: 10);
 
-        var page = await _connection.QueryPagedAsync<ProductRow>(
+        var page = await _connection.QueryPagedAsync<BulkTestProduct>(
             sql: "SELECT id, name, price, is_active AS IsActive FROM products ORDER BY name",
             countSql: "SELECT COUNT(*) FROM products",
             pagination: pagination);

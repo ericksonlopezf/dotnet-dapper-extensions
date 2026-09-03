@@ -2,7 +2,9 @@
   "stryker-config": {
     "project": "EricksonLopez.DapperExtensions.csproj",
     "test-projects": [
-      "EricksonLopez.DapperExtensions.Tests.csproj"
+      "EricksonLopez.DapperExtensions.Tests.csproj",
+      "EricksonLopez.DapperExtensions.Tests.Resilience.csproj",
+      "EricksonLopez.DapperExtensions.Tests.UnitOfWork.csproj"
     ],
     "mutate": [
       "**/*.cs",
@@ -24,9 +26,7 @@
     ],
     "ignore-methods": [
       "ConfigureAwait",
-      "*ConfigureAwait",
-      "Dispose",
-      "DisposeAsync"
+      "*ConfigureAwait"
     ]
   }
 }

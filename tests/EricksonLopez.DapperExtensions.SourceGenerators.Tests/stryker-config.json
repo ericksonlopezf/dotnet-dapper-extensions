@@ -1,17 +1,30 @@
 {
   "stryker-config": {
     "project": "EricksonLopez.DapperExtensions.SourceGenerators.csproj",
-    "reporters": [
-      "ClearText",
-      "Progress",
-      "Json"
+    "test-projects": [
+      "EricksonLopez.DapperExtensions.SourceGenerators.Tests.csproj"
     ],
-    "concurrency": 6,
-    "additional-timeout": 30000,
+    "mutate": [
+      "**/*.cs",
+      "!bin/**",
+      "!obj/**",
+      "!**/*.g.cs",
+      "!**/*.AssemblyInfo.cs"
+    ],
     "thresholds": {
       "high": 100,
       "low": 98,
       "break": 95
-    }
+    },
+    "reporters": [
+      "html",
+      "json",
+      "cleartext",
+      "progress"
+    ],
+    "ignore-methods": [
+      "ConfigureAwait",
+      "*ConfigureAwait"
+    ]
   }
 }

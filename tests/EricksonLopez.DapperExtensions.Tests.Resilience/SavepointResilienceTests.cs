@@ -139,6 +139,8 @@ public class SavepointResilienceTests
         executed.Should().BeTrue();
         capturedName.Should().NotBeNullOrWhiteSpace();
         capturedName!.Should().StartWith("SP_");
+        capturedName.Length.Should().Be(35);
+        Guid.TryParseExact(capturedName.Substring(3), "N", out _).Should().BeTrue();
         await savepoint.Received(1).ReleaseAsync(Arg.Any<CancellationToken>());
         await savepoint.DidNotReceive().RollbackAsync(Arg.Any<CancellationToken>());
     }
@@ -202,6 +204,59 @@ public class SavepointResilienceTests
 
         result.Should().Be(123);
         capturedName.Should().StartWith("SP_");
+        capturedName!.Length.Should().Be(35);
+        Guid.TryParseExact(capturedName.Substring(3), "N", out _).Should().BeTrue();
+        await savepoint.Received(1).ReleaseAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteInSavepointWithRetryAsync_IResiliencePipeline_DefaultSavepointName_CreatesExecutesAndReleases()
+    {
+        var uow = Substitute.For<IUnitOfWork>();
+        var savepoint = Substitute.For<ISavepoint>();
+        string? capturedName = null;
+
+        uow.CreateSavepointAsync(Arg.Do<string>(s => capturedName = s), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(savepoint));
+
+        var adapterPipeline = new PollyResiliencePipeline("test-adapter", _pipeline);
+        var executed = false;
+        await uow.ExecuteInSavepointWithRetryAsync(adapterPipeline, async (currentUow, ct) =>
+        {
+            executed = true;
+            await Task.CompletedTask;
+        });
+
+        executed.Should().BeTrue();
+        capturedName.Should().NotBeNullOrWhiteSpace();
+        capturedName!.Should().StartWith("SP_");
+        capturedName.Length.Should().Be(35);
+        Guid.TryParseExact(capturedName.Substring(3), "N", out _).Should().BeTrue();
+        await savepoint.Received(1).ReleaseAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteInSavepointWithRetryAsync_IResiliencePipeline_Generic_DefaultSavepointName_GeneratesNameAndReturnsResult()
+    {
+        var uow = Substitute.For<IUnitOfWork>();
+        var savepoint = Substitute.For<ISavepoint>();
+        string? capturedName = null;
+
+        uow.CreateSavepointAsync(Arg.Do<string>(s => capturedName = s), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(savepoint));
+
+        var adapterPipeline = new PollyResiliencePipeline("test-adapter", _pipeline);
+        var result = await uow.ExecuteInSavepointWithRetryAsync<int>(adapterPipeline, async (currentUow, ct) =>
+        {
+            await Task.CompletedTask;
+            return 789;
+        });
+
+        result.Should().Be(789);
+        capturedName.Should().NotBeNullOrWhiteSpace();
+        capturedName!.Should().StartWith("SP_");
+        capturedName.Length.Should().Be(35);
+        Guid.TryParseExact(capturedName.Substring(3), "N", out _).Should().BeTrue();
         await savepoint.Received(1).ReleaseAsync(Arg.Any<CancellationToken>());
     }
 
@@ -363,6 +418,8 @@ public class SavepointResilienceTests
 
         executed.Should().BeTrue();
         capturedName.Should().StartWith("SP_");
+        capturedName!.Length.Should().Be(35);
+        Guid.TryParseExact(capturedName.Substring(3), "N", out _).Should().BeTrue();
         await savepoint.Received(1).ReleaseAsync(Arg.Any<CancellationToken>());
         await savepoint.DidNotReceive().RollbackAsync(Arg.Any<CancellationToken>());
     }
@@ -438,23 +495,20 @@ public class SavepointResilienceTests
         await savepoint.DidNotReceive().ReleaseAsync(Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task ExecuteInSavepointWithRetryAsync_Generic_IResiliencePipeline_DefaultName_GeneratesSpPrefix()
+    private static (IUnitOfWork Uow, ISavepoint Savepoint) CreateSavepointUow(Action<string>? onSavepointName = null)
     {
         var uow = Substitute.For<IUnitOfWork>();
         var savepoint = Substitute.For<ISavepoint>();
-        string? capturedName = null;
-
-        uow.CreateSavepointAsync(Arg.Do<string>(s => capturedName = s), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(savepoint));
-
-        var pipeline = new PollyResiliencePipeline("test-pipeline", new ResiliencePipelineBuilder().Build());
-
-        var result = await uow.ExecuteInSavepointWithRetryAsync<int>(pipeline, (u, ct) => Task.FromResult(99));
-
-        result.Should().Be(99);
-        capturedName.Should().StartWith("SP_");
-        await savepoint.Received(1).ReleaseAsync(Arg.Any<CancellationToken>());
-        await savepoint.DidNotReceive().RollbackAsync(Arg.Any<CancellationToken>());
+        if (onSavepointName != null)
+        {
+            uow.CreateSavepointAsync(Arg.Do<string>(s => onSavepointName(s)), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(savepoint));
+        }
+        else
+        {
+            uow.CreateSavepointAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(savepoint));
+        }
+        return (uow, savepoint);
     }
 }

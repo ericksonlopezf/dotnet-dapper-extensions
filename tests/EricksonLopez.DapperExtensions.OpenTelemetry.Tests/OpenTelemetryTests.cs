@@ -13,116 +13,20 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Xunit;
 
+using EricksonLopez.DapperExtensions.Testing.Common;
+
 namespace EricksonLopez.DapperExtensions.OpenTelemetry.Tests;
 
 public class OpenTelemetryTests
 {
-#nullable disable
-    private sealed class NpgsqlCustomConnection : IDbConnection
-    {
-        public string ConnectionString { get; set; } = string.Empty;
-        public int ConnectionTimeout => 30;
-        public string Database => "pg_db";
-        public ConnectionState State => ConnectionState.Open;
-        public IDbTransaction BeginTransaction() => throw new NotImplementedException();
-        public IDbTransaction BeginTransaction(IsolationLevel il) => throw new NotImplementedException();
-        public void ChangeDatabase(string databaseName) => throw new NotImplementedException();
-        public void Close() { }
-        public IDbCommand CreateCommand() => throw new NotImplementedException();
-        public void Open() { }
-        public void Dispose() { }
-    }
+    private sealed class NpgsqlCustomConnection : TestAdoConnection { }
+    private sealed class SqlConnectionCustom : TestAdoConnection { }
+    private sealed class MySqlCustomConnection : TestAdoConnection { }
+    private sealed class MariaDbCustomConnection : TestAdoConnection { }
+    private sealed class SqliteCustomConnection : TestAdoConnection { }
+    private sealed class OracleCustomConnection : TestAdoConnection { }
+    private sealed class GenericCustomConnection : TestAdoConnection { }
 
-    private sealed class SqlConnectionCustom : IDbConnection
-    {
-        public string ConnectionString { get; set; } = string.Empty;
-        public int ConnectionTimeout => 30;
-        public string Database => "sql_db";
-        public ConnectionState State => ConnectionState.Open;
-        public IDbTransaction BeginTransaction() => throw new NotImplementedException();
-        public IDbTransaction BeginTransaction(IsolationLevel il) => throw new NotImplementedException();
-        public void ChangeDatabase(string databaseName) => throw new NotImplementedException();
-        public void Close() { }
-        public IDbCommand CreateCommand() => throw new NotImplementedException();
-        public void Open() { }
-        public void Dispose() { }
-    }
-
-    private sealed class MySqlCustomConnection : IDbConnection
-    {
-        public string ConnectionString { get; set; } = string.Empty;
-        public int ConnectionTimeout => 30;
-        public string Database => "mysql_db";
-        public ConnectionState State => ConnectionState.Open;
-        public IDbTransaction BeginTransaction() => throw new NotImplementedException();
-        public IDbTransaction BeginTransaction(IsolationLevel il) => throw new NotImplementedException();
-        public void ChangeDatabase(string databaseName) => throw new NotImplementedException();
-        public void Close() { }
-        public IDbCommand CreateCommand() => throw new NotImplementedException();
-        public void Open() { }
-        public void Dispose() { }
-    }
-
-    private sealed class MariaDbCustomConnection : IDbConnection
-    {
-        public string ConnectionString { get; set; } = string.Empty;
-        public int ConnectionTimeout => 30;
-        public string Database => "maria_db";
-        public ConnectionState State => ConnectionState.Open;
-        public IDbTransaction BeginTransaction() => throw new NotImplementedException();
-        public IDbTransaction BeginTransaction(IsolationLevel il) => throw new NotImplementedException();
-        public void ChangeDatabase(string databaseName) => throw new NotImplementedException();
-        public void Close() { }
-        public IDbCommand CreateCommand() => throw new NotImplementedException();
-        public void Open() { }
-        public void Dispose() { }
-    }
-
-    private sealed class SqliteCustomConnection : IDbConnection
-    {
-        public string ConnectionString { get; set; } = string.Empty;
-        public int ConnectionTimeout => 30;
-        public string Database => "sqlite_db";
-        public ConnectionState State => ConnectionState.Open;
-        public IDbTransaction BeginTransaction() => throw new NotImplementedException();
-        public IDbTransaction BeginTransaction(IsolationLevel il) => throw new NotImplementedException();
-        public void ChangeDatabase(string databaseName) => throw new NotImplementedException();
-        public void Close() { }
-        public IDbCommand CreateCommand() => throw new NotImplementedException();
-        public void Open() { }
-        public void Dispose() { }
-    }
-
-    private sealed class OracleCustomConnection : IDbConnection
-    {
-        public string ConnectionString { get; set; } = string.Empty;
-        public int ConnectionTimeout => 30;
-        public string Database => "oracle_db";
-        public ConnectionState State => ConnectionState.Open;
-        public IDbTransaction BeginTransaction() => throw new NotImplementedException();
-        public IDbTransaction BeginTransaction(IsolationLevel il) => throw new NotImplementedException();
-        public void ChangeDatabase(string databaseName) => throw new NotImplementedException();
-        public void Close() { }
-        public IDbCommand CreateCommand() => throw new NotImplementedException();
-        public void Open() { }
-        public void Dispose() { }
-    }
-
-    private sealed class GenericCustomConnection : IDbConnection
-    {
-        public string ConnectionString { get; set; } = string.Empty;
-        public int ConnectionTimeout => 30;
-        public string Database => "generic_db";
-        public ConnectionState State => ConnectionState.Open;
-        public IDbTransaction BeginTransaction() => throw new NotImplementedException();
-        public IDbTransaction BeginTransaction(IsolationLevel il) => throw new NotImplementedException();
-        public void ChangeDatabase(string databaseName) => throw new NotImplementedException();
-        public void Close() { }
-        public IDbCommand CreateCommand() => throw new NotImplementedException();
-        public void Open() { }
-        public void Dispose() { }
-    }
-#nullable restore
 
     private sealed record MetricRecord(string InstrumentName, object Value, Dictionary<string, object?> Tags);
 
@@ -163,7 +67,7 @@ public class OpenTelemetryTests
     }
 
     [Fact]
-    public void DapperDiagnostics_PropertiesAndConstants()
+    public void DapperDiagnostics_StaticProperties_ExposeExpectedMetadata()
     {
         DapperDiagnostics.SourceName.Should().Be("EricksonLopez.DapperExtensions");
         DapperDiagnostics.Version.Should().Be("2.0.0");

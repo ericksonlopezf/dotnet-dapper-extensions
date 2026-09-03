@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using AwesomeAssertions;
 using EricksonLopez.DapperExtensions.PostgreSql.Bulk;
+using EricksonLopez.DapperExtensions.Testing.Common;
 using NpgsqlTypes;
 using Xunit;
 
@@ -10,14 +11,7 @@ namespace EricksonLopez.DapperExtensions.PostgreSql.Tests.Unit;
 
 public sealed class BulkParametersTests
 {
-    private sealed record Product(Guid Id, string Name, decimal Price, bool IsActive);
-
-    private static readonly List<Product> _products =
-    [
-        new(Guid.NewGuid(), "Widget",    9.99m,   true),
-        new(Guid.NewGuid(), "Gadget",    49.99m,  true),
-        new(Guid.NewGuid(), "Doohickey", 4.99m,   false),
-    ];
+    private static readonly List<BulkTestProduct> _products = BulkTestProduct.CreateDefaultProducts();
 
     [Fact]
     public void Build_WithColumns_ShouldProduceCorrectParameterCount()
@@ -102,7 +96,7 @@ public sealed class BulkParametersTests
     [Fact]
     public void From_WithEmptyCollection_ShouldBuildWithZeroCount()
     {
-        var bulk = BulkParameters.From(Array.Empty<Product>())
+        var bulk = BulkParameters.From(Array.Empty<BulkTestProduct>())
             .Add("Names", p => p.Name, NpgsqlDbType.Text);
 
         bulk.Count.Should().Be(0);
@@ -114,7 +108,7 @@ public sealed class BulkParametersTests
     [Fact]
     public void From_WithNullItems_ShouldThrow()
     {
-        var act = () => BulkParameters.From((IEnumerable<Product>)null!);
+        var act = () => BulkParameters.From((IEnumerable<BulkTestProduct>)null!);
         act.Should().Throw<ArgumentNullException>().WithParameterName("items");
     }
 
@@ -135,7 +129,7 @@ public sealed class BulkParametersTests
     {
         var bulk = BulkParameters.From(_products);
 
-        var act = () => bulk.Add("Ids", (Func<Product, Guid>)null!, NpgsqlDbType.Uuid);
+        var act = () => bulk.Add("Ids", (Func<BulkTestProduct, Guid>)null!, NpgsqlDbType.Uuid);
         act.Should().Throw<ArgumentNullException>().WithParameterName("selector");
     }
 }

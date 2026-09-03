@@ -51,6 +51,7 @@ public class UnitOfWorkTests : IAsyncLifetime
         await cmd.ExecuteNonQueryAsync();
     }
 
+
     // ──────────────────────────────────────────────────────────────────────────
     // Core transaction tests
     // ──────────────────────────────────────────────────────────────────────────

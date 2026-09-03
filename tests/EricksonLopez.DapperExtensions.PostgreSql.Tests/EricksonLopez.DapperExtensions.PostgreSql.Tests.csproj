@@ -19,9 +19,6 @@
 
   
 
-  <ItemGroup Condition="'$(IncludeIntegrationTests)' != 'true'">
-    <Compile Remove="Integration\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EricksonLopez.DapperExtensions.PostgreSql\EricksonLopez.DapperExtensions.PostgreSql.csproj" />

@@ -24,6 +24,9 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="EricksonLopez.DapperExtensions.Tests" />
+    <InternalsVisibleTo Include="EricksonLopez.DapperExtensions.Tests.Resilience" />
+    <InternalsVisibleTo Include="EricksonLopez.DapperExtensions.Tests.UnitOfWork" />
+    <InternalsVisibleTo Include="EricksonLopez.DapperExtensions.SqlServer.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 

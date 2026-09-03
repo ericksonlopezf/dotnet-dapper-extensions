@@ -58,7 +58,7 @@ public sealed class BulkExtensionsTests
         var rowsWritten = await connection.BulkInsertAsync("dbo.Products", table);
 
         rowsWritten.Should().Be(0);
-        connection.OpenCount.Should().Be(0);
+        connection.Spy.OpenCount.Should().Be(0);
     }
 
     [Fact]
@@ -76,124 +76,117 @@ public sealed class BulkExtensionsTests
     }
 
     [Fact]
-    public async Task BulkInsertAsync_WithClosedSqlConnection_AttemptsConnectionOpenAndThrowsSqlException()
+    public async Task BulkInsertAsync_WithClosedConnection_WhenOpenAsyncFails_PropagatesException()
     {
-        using var connection = new SqlConnection("Server=127.0.0.1,65432;Database=Fake;Connection Timeout=1;");
+        using var connection = new FailingOpenAdoConnection();
         using var table = new DataTable();
         table.Columns.Add("Id", typeof(int));
         table.Rows.Add(1);
 
-        var act = () => connection.BulkInsertAsync("dbo.Products", table);
-        await act.Should().ThrowAsync<SqlException>();
+        var act = () => connection.BulkInsertInternalAsync(
+            "dbo.Products",
+            table,
+            executor: (_, _, _, _, _, _, _) => Task.FromResult(1));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Simulated connection open failure");
+    }
+
+    private sealed class FailingOpenAdoConnection : TestAdoConnection
+    {
+        public FailingOpenAdoConnection() : base(ConnectionState.Closed) { }
+
+        public override Task OpenAsync(CancellationToken cancellationToken)
+            => Task.FromException(new InvalidOperationException("Simulated connection open failure"));
     }
 
     [Fact]
     public async Task BulkInsertAsync_WithOverriddenExecutor_AndOpenConnection_ExecutesWithoutReopening()
     {
-        var originalExecutor = BulkExtensions.BulkCopyExecutor;
-        try
+        SqlConnection? capturedConn = null;
+        string? capturedTable = null;
+        DataTable? capturedDt = null;
+        SqlTransaction? capturedTx = null;
+        int capturedBatch = -1;
+        int capturedTimeout = -1;
+        CancellationToken capturedCt = default;
+
+        Task<int> SpyExecutor(SqlConnection conn, string table, DataTable dt, SqlTransaction? tx, int batch, int timeout, CancellationToken ct)
         {
-            SqlConnection? capturedConn = null;
-            string? capturedTable = null;
-            DataTable? capturedDt = null;
-            SqlTransaction? capturedTx = null;
-            int capturedBatch = -1;
-            int capturedTimeout = -1;
-            CancellationToken capturedCt = default;
-
-            BulkExtensions.BulkCopyExecutor = (conn, table, dt, tx, batch, timeout, ct) =>
-            {
-                capturedConn = conn;
-                capturedTable = table;
-                capturedDt = dt;
-                capturedTx = tx;
-                capturedBatch = batch;
-                capturedTimeout = timeout;
-                capturedCt = ct;
-                return Task.FromResult(dt.Rows.Count);
-            };
-
-            using var connection = new TestAdoConnection(ConnectionState.Open);
-            using var table = new DataTable();
-            table.Columns.Add("Id", typeof(int));
-            table.Rows.Add(10);
-            table.Rows.Add(20);
-
-            using var cts = new CancellationTokenSource();
-
-            var rows = await connection.BulkInsertAsync(
-                "dbo.CustomTable",
-                table,
-                transaction: null,
-                batchSize: 100,
-                bulkCopyTimeout: 60,
-                cancellationToken: cts.Token);
-
-            rows.Should().Be(2);
-            connection.OpenCount.Should().Be(0);
-            capturedTable.Should().Be("dbo.CustomTable");
-            capturedBatch.Should().Be(100);
-            capturedTimeout.Should().Be(60);
-            capturedCt.Should().Be(cts.Token);
+            capturedConn = conn;
+            capturedTable = table;
+            capturedDt = dt;
+            capturedTx = tx;
+            capturedBatch = batch;
+            capturedTimeout = timeout;
+            capturedCt = ct;
+            return Task.FromResult(dt.Rows.Count);
         }
-        finally
-        {
-            BulkExtensions.BulkCopyExecutor = originalExecutor;
-        }
+
+        using var connection = new TestAdoConnection(ConnectionState.Open);
+        using var table = new DataTable();
+        table.Columns.Add("Id", typeof(int));
+        table.Rows.Add(10);
+        table.Rows.Add(20);
+
+        using var cts = new CancellationTokenSource();
+
+        var rows = await connection.BulkInsertInternalAsync(
+            "dbo.CustomTable",
+            table,
+            transaction: null,
+            batchSize: 100,
+            bulkCopyTimeout: 60,
+            executor: SpyExecutor,
+            cancellationToken: cts.Token);
+
+        rows.Should().Be(2);
+        connection.Spy.OpenCount.Should().Be(0);
+        capturedTable.Should().Be("dbo.CustomTable");
+        capturedBatch.Should().Be(100);
+        capturedTimeout.Should().Be(60);
+        capturedCt.Should().Be(cts.Token);
     }
 
     [Fact]
     public async Task BulkInsertAsync_WithOverriddenExecutor_AndClosedConnection_OpensConnectionAndExecutes()
     {
-        var originalExecutor = BulkExtensions.BulkCopyExecutor;
-        try
-        {
-            BulkExtensions.BulkCopyExecutor = (conn, table, dt, tx, batch, timeout, ct) => Task.FromResult(dt.Rows.Count);
+        Task<int> SpyExecutor(SqlConnection conn, string table, DataTable dt, SqlTransaction? tx, int batch, int timeout, CancellationToken ct) => Task.FromResult(dt.Rows.Count);
 
-            using var connection = new TestAdoConnection(ConnectionState.Closed);
-            using var table = new DataTable();
-            table.Columns.Add("Id", typeof(int));
-            table.Rows.Add(10);
+        using var connection = new TestAdoConnection(ConnectionState.Closed);
+        using var table = new DataTable();
+        table.Columns.Add("Id", typeof(int));
+        table.Rows.Add(10);
 
-            var rows = await connection.BulkInsertAsync("dbo.CustomTable", table);
+        var rows = await connection.BulkInsertInternalAsync(
+            "dbo.CustomTable",
+            table,
+            executor: SpyExecutor);
 
-            rows.Should().Be(1);
-            connection.OpenCount.Should().Be(1);
-        }
-        finally
-        {
-            BulkExtensions.BulkCopyExecutor = originalExecutor;
-        }
+        rows.Should().Be(1);
+        connection.Spy.OpenCount.Should().Be(1);
     }
+
+    private const string _dummyConnectionString = "Data Source=localhost;Initial Catalog=TestDb;Integrated Security=True;Encrypt=False;";
 
     [Fact]
     public async Task ExecuteSqlBulkCopyAsync_WithOverriddenWriter_ReturnsWriterResult()
     {
-        var originalWriter = BulkExtensions.BulkCopyWriter;
-        try
-        {
-            BulkExtensions.BulkCopyWriter = (bc, dt, ct) => Task.FromResult(99);
+        using var connection = new SqlConnection(_dummyConnectionString);
+        using var table = new DataTable();
+        table.Columns.Add("Id", typeof(int));
+        table.Rows.Add(1);
 
-            using var connection = new SqlConnection("Server=127.0.0.1,65432;Database=Fake;Connection Timeout=1;");
-            using var table = new DataTable();
-            table.Columns.Add("Id", typeof(int));
-            table.Rows.Add(1);
+        using var bulkCopy = BulkExtensions.CreateSqlBulkCopy(connection, null, "dbo.TestTable", table, 0, 30);
+        var rows = await BulkExtensions.ExecuteSqlBulkCopyAsync(bulkCopy, table, default, writer: (bc, dt, ct) => Task.FromResult(99));
 
-            using var bulkCopy = BulkExtensions.CreateSqlBulkCopy(connection, null, "dbo.TestTable", table, 0, 30);
-            var rows = await BulkExtensions.ExecuteSqlBulkCopyAsync(bulkCopy, table, default);
-
-            rows.Should().Be(99);
-        }
-        finally
-        {
-            BulkExtensions.BulkCopyWriter = originalWriter;
-        }
+        rows.Should().Be(99);
     }
 
     [Fact]
     public void CreateSqlBulkCopy_ConfiguresAllPropertiesCorrectly()
     {
-        using var connection = new SqlConnection("Server=127.0.0.1,65432;Database=Fake;Connection Timeout=1;");
+        using var connection = new SqlConnection(_dummyConnectionString);
         using var table = new DataTable();
         table.Columns.Add("Id", typeof(int));
         table.Columns.Add("Name", typeof(string));
@@ -213,7 +206,7 @@ public sealed class BulkExtensionsTests
     [Fact]
     public async Task ExecuteSqlBulkCopyAsync_WithClosedConnection_ThrowsInvalidOperationException()
     {
-        using var connection = new SqlConnection("Server=127.0.0.1,65432;Database=Fake;Connection Timeout=1;");
+        using var connection = new SqlConnection(_dummyConnectionString);
         using var table = new DataTable();
         table.Columns.Add("Id", typeof(int));
         table.Rows.Add(1);
@@ -226,13 +219,13 @@ public sealed class BulkExtensionsTests
     [Fact]
     public async Task DefaultBulkCopyExecutor_WhenGivenValidDataTable_RunsPipelineAndThrowsInvalidOperationOnClosedConn()
     {
-        using var connection = new SqlConnection("Server=127.0.0.1,65432;Database=Fake;Connection Timeout=1;");
+        using var connection = new SqlConnection(_dummyConnectionString);
         using var table = new DataTable();
         table.Columns.Add("Id", typeof(int));
         table.Columns.Add("Name", typeof(string));
         table.Rows.Add(1, "Test");
 
-        var act = async () => await BulkExtensions.BulkCopyExecutor(connection, "dbo.TestTable", table, null, 50, 45, default);
+        var act = async () => await BulkExtensions.DefaultBulkCopyExecutor(connection, "dbo.TestTable", table, null, 50, 45, default);
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
@@ -267,8 +260,8 @@ public sealed class BulkExtensionsTests
             commandTimeout: 45);
 
         result.Should().Be(42);
-        connection.OpenCount.Should().Be(1);
-        connection.LastCommandText.Should().Be("DELETE FROM dbo.Products WHERE Price > @MinPrice");
+        connection.Spy.OpenCount.Should().Be(1);
+        connection.Spy.LastCommandText.Should().Be("DELETE FROM dbo.Products WHERE Price > @MinPrice");
     }
 
     [Fact]
@@ -278,7 +271,7 @@ public sealed class BulkExtensionsTests
         var result = await connection.BulkDeleteAsync("DELETE FROM dbo.Products");
 
         result.Should().Be(42);
-        connection.OpenCount.Should().Be(0);
+        connection.Spy.OpenCount.Should().Be(0);
     }
 
     // ─── BulkUpdateAsync Tests ────────────────────────────────────────────────
@@ -312,8 +305,8 @@ public sealed class BulkExtensionsTests
             commandTimeout: 60);
 
         result.Should().Be(42);
-        connection.OpenCount.Should().Be(1);
-        connection.LastCommandText.Should().Be("UPDATE dbo.Products SET Price = @Price WHERE CategoryId = @CategoryId");
+        connection.Spy.OpenCount.Should().Be(1);
+        connection.Spy.LastCommandText.Should().Be("UPDATE dbo.Products SET Price = @Price WHERE CategoryId = @CategoryId");
     }
 
     [Fact]
@@ -323,7 +316,7 @@ public sealed class BulkExtensionsTests
         var result = await connection.BulkUpdateAsync("UPDATE dbo.Products SET IsActive = 1");
 
         result.Should().Be(42);
-        connection.OpenCount.Should().Be(0);
+        connection.Spy.OpenCount.Should().Be(0);
     }
 
     [Fact]
@@ -352,5 +345,29 @@ public sealed class BulkExtensionsTests
     {
         BulkExtensions.DefaultBulkCopyExecutor.Should().NotBeNull();
         BulkExtensions.DefaultBulkCopyWriter.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task BulkInsertAsync_WhenCancellationTokenCanceled_ThrowsOperationCanceledException()
+    {
+        using var connection = new TestAdoConnection(ConnectionState.Closed);
+        using var table = new DataTable();
+        table.Columns.Add("Id", typeof(int));
+        table.Rows.Add(1);
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = async () => await connection.BulkInsertInternalAsync(
+            "dbo.Products",
+            table,
+            executor: (_, _, _, _, _, _, ct) =>
+            {
+                ct.ThrowIfCancellationRequested();
+                return Task.FromResult(1);
+            },
+            cancellationToken: cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 }

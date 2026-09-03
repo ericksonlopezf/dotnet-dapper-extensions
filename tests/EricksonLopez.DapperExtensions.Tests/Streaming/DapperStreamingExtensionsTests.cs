@@ -51,6 +51,17 @@ public sealed class DapperStreamingExtensionsTests : IDisposable
     }
 
     [Fact]
+    public void StreamAsync_WithCommandDefinition_WithNullConnection_ThrowsArgumentNullException()
+    {
+        IDbConnection nullConn = null!;
+        var cmd = new CommandDefinition("SELECT * FROM TestItems");
+        var act = () => nullConn.StreamAsync<StreamingTestItem>(cmd);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("connection");
+    }
+
+    [Fact]
     public void StreamAsync_WithNullSql_ThrowsArgumentNullException()
     {
         var act = () => _connection.StreamAsync<StreamingTestItem>(null!);
@@ -133,6 +144,92 @@ public sealed class DapperStreamingExtensionsTests : IDisposable
 
         items.Should().HaveCount(1);
         items[0].Name.Should().Be("Gamma");
+    }
+
+    [Fact]
+    public async Task StreamAsync_WhenConnectionClosed_OpensConnectionAutomaticallyAndStreams()
+    {
+        using var master = new SqliteConnection("Data Source=InMemoryStreamClosedTest;Mode=Memory;Cache=Shared");
+        await master.OpenAsync();
+        await master.ExecuteAsync("CREATE TABLE ClosedTest (Id INTEGER PRIMARY KEY, Val TEXT); INSERT INTO ClosedTest VALUES (1, 'Alpha');");
+
+        using var closedConnection = new SqliteConnection("Data Source=InMemoryStreamClosedTest;Mode=Memory;Cache=Shared");
+        closedConnection.State.Should().Be(ConnectionState.Closed);
+
+        var items = new List<string>();
+        await foreach (var item in closedConnection.StreamAsync<string>("SELECT Val FROM ClosedTest"))
+        {
+            items.Add(item);
+        }
+
+        closedConnection.State.Should().Be(ConnectionState.Open);
+        items.Should().ContainSingle().Which.Should().Be("Alpha");
+    }
+
+    [Fact]
+    public async Task StreamAsync_WithAlreadyCancelledToken_ThrowsImmediatelyWithoutReading()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = async () =>
+        {
+            await foreach (var _ in _connection.StreamAsync<StreamingTestItem>(
+                "SELECT Id, Name FROM TestItems",
+                cancellationToken: cts.Token))
+            {
+            }
+        };
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task StreamAsync_WithCommandDefinition_WhenCancelledMidStream_AbortsStream()
+    {
+        using var cts = new CancellationTokenSource();
+        var cmd = new CommandDefinition(
+            "SELECT Id, Name FROM TestItems ORDER BY Id ASC",
+            cancellationToken: cts.Token);
+
+        var items = new List<StreamingTestItem>();
+        var act = async () =>
+        {
+            await foreach (var item in _connection.StreamAsync<StreamingTestItem>(cmd))
+            {
+                items.Add(item);
+                if (items.Count == 1)
+                {
+                    cts.Cancel();
+                }
+            }
+        };
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        items.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task StreamAsync_WhenConsumerThrowsDuringIteration_AbortsAndReleasesConnection()
+    {
+        var act = async () =>
+        {
+            await foreach (var item in _connection.StreamAsync<StreamingTestItem>(
+                "SELECT Id, Name FROM TestItems ORDER BY Id ASC"))
+            {
+                if (item.Id == 2)
+                {
+                    throw new InvalidOperationException("Consumer loop aborted");
+                }
+            }
+        };
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Consumer loop aborted");
+
+        // Verify the connection is unblocked and reader was disposed in finally
+        var count = await _connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM TestItems");
+        count.Should().Be(5);
     }
 
     public void Dispose()

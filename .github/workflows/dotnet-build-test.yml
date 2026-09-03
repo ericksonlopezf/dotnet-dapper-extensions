@@ -105,8 +105,7 @@ jobs:
           --logger "trx;LogFileName=test-results.trx"
           --results-directory ./test-results
           --collect:"XPlat Code Coverage"
-          --
-          DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover,cobertura
+          --settings .runsettings
 
       - name: End Sonar Analysis
         env:

@@ -5,10 +5,11 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA2201;CA1001;CA2012;CS8002;CA1010;CA1816;CA1034;CA1711</NoWarn>
     <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <RunSettingsFilePath Condition="Exists('$(MSBuildThisFileDirectory)../.runsettings')">$(MSBuildThisFileDirectory)../.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Common\**\*.cs" Link="Common\%(RecursiveDir)%(FileName)%(Extension)" />
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'EricksonLopez.DapperExtensions.AotSmokeTest' and '$(MSBuildProjectName)' != 'EricksonLopez.DapperExtensions.Testing.Common'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)EricksonLopez.DapperExtensions.Testing.Common\EricksonLopez.DapperExtensions.Testing.Common.csproj" />
   </ItemGroup>
 </Project>
 

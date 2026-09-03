@@ -154,4 +154,26 @@ public sealed class BulkExtensionsTests
         var rows = await connection.BulkUpdateAsync("UPDATE items SET name = @name WHERE id = @id", parameters);
         rows.Should().Be(1);
     }
+
+    [Fact]
+    public async Task BulkInsertAsync_WhenCancellationTokenCanceled_ThrowsOperationCanceledException()
+    {
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await connection.ExecuteAsync("CREATE TABLE items (id INTEGER, name TEXT);");
+
+        var parameters = new DynamicParameters();
+        parameters.Add("id", 1);
+        parameters.Add("name", "Test");
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = async () => await connection.BulkInsertAsync(
+            "INSERT INTO items (id, name) VALUES (@id, @name)",
+            parameters,
+            cancellationToken: cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
 }
