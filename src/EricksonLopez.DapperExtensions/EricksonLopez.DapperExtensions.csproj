@@ -20,6 +20,7 @@
     <PackageReference Include="EricksonLopez.Resilience.Polly" />
     <PackageReference Include="EricksonLopez.SqlBuilder.Abstractions" />
     <PackageReference Include="EricksonLopez.Pagination.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
