@@ -8,12 +8,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
+using EricksonLopez.DapperExtensions.Testing.Common;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Xunit;
-
-using EricksonLopez.DapperExtensions.Testing.Common;
 
 namespace EricksonLopez.DapperExtensions.OpenTelemetry.Tests;
 

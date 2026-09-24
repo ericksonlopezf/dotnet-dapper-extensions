@@ -25,6 +25,7 @@
     "ignore-methods": [
       "ConfigureAwait",
       "*ConfigureAwait"
-    ]
+    ],
+    "concurrency": 2
   }
 }

@@ -50,10 +50,18 @@ public static class BulkExtensions
 
         command.Parameters.AddRange(parameters);
 
-        if (connection.State != ConnectionState.Open)
+        bool wasClosed = connection.State == ConnectionState.Closed;
+        if (wasClosed)
             await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (wasClosed) await connection.CloseAsync().ConfigureAwait(false);
+        }
     }
 
     /// <summary>

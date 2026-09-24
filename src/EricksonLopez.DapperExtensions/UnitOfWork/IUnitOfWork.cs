@@ -14,8 +14,8 @@ namespace EricksonLopez.DapperExtensions.UnitOfWork;
 /// <strong>Architectural Role &amp; Clean Architecture Boundary:</strong>
 /// <c>IUnitOfWork</c> represents the application/domain boundary contract expressing that a set of operations belongs
 /// to a single logical unit of work. Infrastructure-level transactional coordination (such as ambient <c>AsyncLocal</c>
-/// propagation, nested savepoints, enlistment hooks, and monadic auto-rollback) is managed by <c>ITransactionManager</c>
-/// in <c>EricksonLopez.Transaction</c>.
+/// propagation, nested savepoints, enlistment hooks, and monadic auto-rollback) is managed by
+/// <c>ITransactionManager</c> in the <c>EricksonLopez.Transaction</c> package.
 /// </para>
 /// <para>
 /// If <see cref="CommitAsync"/> is not called before disposal, the transaction is automatically rolled back.
@@ -57,12 +57,19 @@ public interface IUnitOfWork : IAsyncDisposable
     /// <returns>A task representing the asynchronous operation. The task result contains an <see cref="ISavepoint"/> instance.</returns>
     /// <remarks>
     /// <para>
-    /// If the underlying <see cref="System.Data.IDbTransaction"/> is not a <see cref="System.Data.Common.DbTransaction"/>
-    /// (for example, when using mock or in-memory database drivers), this method returns a no-op savepoint.
-    /// On a no-op savepoint, <see cref="ISavepoint.RollbackAsync"/> and <see cref="ISavepoint.ReleaseAsync"/>
-    /// complete without any database-level effect.
+    /// Savepoints require the underlying <see cref="System.Data.IDbTransaction"/> to be an instance of
+    /// <see cref="System.Data.Common.DbTransaction"/> (i.e., a real ADO.NET provider transaction).
+    /// If the underlying transaction is not a <see cref="System.Data.Common.DbTransaction"/> — for example,
+    /// when using a custom mock or a non-standard in-memory <see cref="System.Data.IDbTransaction"/> implementation —
+    /// a <see cref="NotSupportedException"/> is thrown.
+    /// </para>
+    /// <para>
+    /// To test code that creates savepoints, use a real ADO.NET provider (e.g., SQLite in-memory via
+    /// <c>Microsoft.Data.Sqlite</c>) or a test double that derives from <see cref="System.Data.Common.DbTransaction"/>.
     /// </para>
     /// </remarks>
+    /// <exception cref="ArgumentException"><paramref name="name"/> is null, empty, or whitespace</exception>
+    /// <exception cref="NotSupportedException">The underlying transaction does not inherit from <see cref="System.Data.Common.DbTransaction"/> and therefore does not support savepoints</exception>
     /// <exception cref="ObjectDisposedException">The unit of work has already been disposed</exception>
     Task<ISavepoint> CreateSavepointAsync(string name, CancellationToken cancellationToken = default);
 }

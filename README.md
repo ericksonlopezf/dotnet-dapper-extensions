@@ -2,17 +2,17 @@
 
 High-performance, Native AOT-ready infrastructure extensions for Dapper across PostgreSQL, SQL Server, MySQL, MariaDB, Oracle, and SQLite.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/ericksonlopezf/dotnet-dapper-extensions/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/ericksonlopezf/dotnet-dapper-extensions/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/ericksonlopezf/dotnet-dapper-extensions/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/ericksonlopezf/dotnet-dapper-extensions/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/ericksonlopezf/dotnet-dapper-extensions?style=for-the-badge&logo=codecov&logoColor=white)](https://codecov.io/gh/ericksonlopezf/dotnet-dapper-extensions)
-[![Quality Gate](https://img.shields.io/sonar/quality_gate/ericksonlopezf_dotnet-dapper-extensions?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white)](https://sonarcloud.io/project/overview?id=ericksonlopezf_dotnet-dapper-extensions)
-[![Mutation Score](https://img.shields.io/badge/Mutation_Score-98%25-brightgreen?style=for-the-badge&logo=stryker&logoColor=white)](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/ci-cd-and-quality.md#4-mutation-testingyml--strykernet-mutation-testing-matrix)
+[![Quality Gate](https://img.shields.io/sonar/quality_gate/ericksonlopezf_dotnet-dapper-extensions?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=ericksonlopezf_dotnet-dapper-extensions)
+[![Mutation Score](https://img.shields.io/badge/Mutation_Score-%E2%89%A598%25-brightgreen?style=for-the-badge&logo=stryker&logoColor=white)](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/ci-cd-and-quality.md#4-mutation-testingyml--strykernet-mutation-testing-matrix)
 [![NuGet](https://img.shields.io/nuget/v/EricksonLopez.DapperExtensions?style=for-the-badge&logo=nuget&logoColor=white&color=512BD4)](https://www.nuget.org/packages/EricksonLopez.DapperExtensions)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/EricksonLopez.DapperExtensions?style=for-the-badge&logo=nuget&logoColor=white&color=004880)](https://www.nuget.org/packages/EricksonLopez.DapperExtensions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/LICENSE)
 [![.NET](https://img.shields.io/badge/.NET_8_%7C_9_%7C_10-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com)
 [![NativeAOT](https://img.shields.io/badge/NativeAOT-Compatible-brightgreen?style=for-the-badge)](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot)
 
-**EricksonLopez.DapperExtensions** is an enterprise-grade, Native AOT-ready infrastructure suite engineered for **Dapper** in modern .NET (`.NET 8`, `.NET 9`, and `.NET 10`). Built on the core philosophy of **"Raw SQL, Managed Infrastructure"**, it eliminates the boilerplate and failure modes of raw ADO.NET while retaining 100% developer control over SQL text, query semantics, and execution plans. It provides async Unit of Work transaction lifecycles, nested savepoint rollbacks, dialect-aware Polly v8 transient fault resilience, single-round-trip bulk operations, keyset pagination, zero-reflection Roslyn source-generated hydration, and full OpenTelemetry distributed tracing and metrics.
+**EricksonLopez.DapperExtensions** is an enterprise-grade, Native AOT-ready infrastructure suite engineered for **Dapper** in modern .NET (`.NET 8`, `.NET 9`, and `.NET 10`). Built on the core philosophy of **"Raw SQL, Managed Infrastructure"**, it eliminates the boilerplate and failure modes of raw ADO.NET while retaining 100% developer control over SQL text, query semantics, and execution plans. It provides async Unit of Work transaction lifecycles, nested savepoint rollbacks, dialect-aware Polly v8 transient fault resilience, single-round-trip bulk operations, keyset pagination, zero-reflection Roslyn source-generated hydration (when using `[SqlEntity]` and `EricksonLopez.DapperExtensions.SourceGenerators`), and full OpenTelemetry distributed tracing and metrics.
 
 ---
 
@@ -22,7 +22,7 @@ High-performance, Native AOT-ready infrastructure extensions for Dapper across P
 - [Key Features](#-key-features)
 - [Ecosystem](#-ecosystem)
 - [Documentation](#-documentation)
-  - [Step-by-Step Interactive Showcase (Levels 00 to 10)](#-step-by-step-interactive-showcase-levels-00-to-10)
+  - [Step-by-Step Interactive Showcase (Levels 00 to 11)](#-step-by-step-interactive-showcase-levels-00-to-11)
   - [Technical Reference & Architecture Guides](#-technical-reference--architecture-guides)
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
@@ -55,7 +55,7 @@ High-performance, Native AOT-ready infrastructure extensions for Dapper across P
 - **Resilient Unit of Work & Savepoint-Aware Retry (ADR-014, ADR-016)**: Enforces transactional integrity by wrapping entire units of work within Polly v8 resilience pipelines, or isolating partial sub-operations inside named `ISavepoint` blocks with deterministic rollbacks.
 - **Keyset (Cursor-Based) Pagination**: Provides $O(\log N)$ index seek pagination (`QueryCursorPagedAsync`) that maintains sub-millisecond execution times regardless of dataset depth.
 - **Dialect-Native Bulk Streaming**: Achieves up to **33.1x higher throughput** and **96% lower GC allocations** via PostgreSQL `UNNEST` array streaming, SQL Server streaming `SqlBulkCopy`, and parameterized multi-row builders.
-- **Zero-Reflection Roslyn Source Generators (ADR-013)**: Automatically emits compile-time `IDataReaderMapper<T>` implementations for classes annotated with `[SqlEntity]`, delivering 100% Native AOT compliance.
+- **Zero-Reflection Roslyn Source Generators (ADR-013)**: Automatically emits compile-time static mapping methods (`ReadFromDataReader`, `GetMultiMapReaderFactory`) for classes annotated with `[SqlEntity]`, delivering 100% Native AOT compliance without reflection or IL emit.
 - **High-Efficiency Multi-Map Grouping (ADR-007)**: Hydrates complex 1:N and N:M object graphs with automatic root deduplication without allocating intermediary LINQ groupings.
 - **Full Observability & Health Probes (ADR-010, ADR-011)**: Native `ActivitySource` tracing, BCL `Meter` latency metrics, and ASP.NET Core database health check probes out of the box.
 
@@ -65,13 +65,14 @@ High-performance, Native AOT-ready infrastructure extensions for Dapper across P
 
 - 🛡️ **Async Unit of Work & Savepoints**: Strict transactional boundary lifecycle with deterministic disposal, automatic commit, and nested `ISavepoint` isolation.
 - 🔄 **Polly v8 Resilience Integration**: Pre-configured resilience pipelines (`Standard`, `CircuitBreaker`, `Aggressive`, `Conservative`) powered by dialect-specific `ISqlTransientErrorDetector` singletons.
-- ⚡ **Dialect-Native Bulk Operations**: Native bulk ingestion optimized per database engine (PostgreSQL `UNNEST`, SQL Server `SqlBulkCopy`, MySQL/MariaDB/Oracle/SQLite batch builders).
+- ⚡ **Dialect-Native Bulk Operations**: Native bulk ingestion optimized per database engine (PostgreSQL `UNNEST`, SQL Server `SqlBulkCopy`, MySQL/MariaDB batch builders, SQLite parameter batching; Oracle native bulk copy deferred).
 - 📜 **Keyset & Counted Pagination**: Unified pagination models (`ICountedPagedList<T>`, `ICursorPagedList<T>`) supporting single-round-trip multi-grid execution.
-- 🧩 **Zero-Allocation Multi-Map**: Fluid API (`MultiMapBuilder<T>`) for mapping relational joins into rich domain aggregates with root deduplication.
+- 🧩 **Zero-Reflection Multi-Map**: Fluid API (`MultiMapBuilder<T>`) for mapping relational joins into rich domain aggregates with root deduplication.
 - ⚙️ **Roslyn Incremental Source Generator**: Compile-time code generation for `[SqlEntity]` classes, eliminating reflection in Native AOT.
 - 🏷️ **Modern Type Handlers**: Built-in, zero-overhead handlers for `DateOnly`, `TimeOnly`, JSON/JSONB (`JsonSerializerContext` AOT-safe), and string-mapped enums.
 - 📊 **Enterprise Observability**: Distributed tracing via OpenTelemetry `ActivitySource` ("`EricksonLopez.DapperExtensions`") and execution latency `Meter` metrics.
 - 🏥 **Database Health Checks**: ASP.NET Core `IHealthCheck` providers with dialect-specific ping probes for Kubernetes readiness and liveness endpoints.
+- 🌊 **Async Streaming**: `DapperStreamingExtensions.StreamAsync<T>` provides unbuffered `IAsyncEnumerable<T>` streaming with O(1) memory profile for the streaming operation itself (10K+ rows). Note: if the caller accumulates results, overall memory is O(N). Not AOT-safe; use `MultiMapBuilder<T>` with `[SqlEntity]` for fully AOT-compatible streaming.
 
 ---
 
@@ -99,7 +100,7 @@ All 11 packages in the **EricksonLopez.DapperExtensions** ecosystem are versione
 
 > 🌐 **Official Documentation Hub:** [https://github.com/ericksonlopezf/dotnet-dapper-extensions/tree/main/docs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/tree/main/docs)
 
-### 🎓 Step-by-Step Interactive Showcase (Levels 00 to 10)
+### 🎓 Step-by-Step Interactive Showcase (Levels 00 to 11)
 
 The living, executable showcase project is available at [`samples/EricksonLopez.DapperExtensions.Showcase`](https://github.com/ericksonlopezf/dotnet-dapper-extensions/tree/main/samples/EricksonLopez.DapperExtensions.Showcase):
 
@@ -110,45 +111,52 @@ The living, executable showcase project is available at [`samples/EricksonLopez.
 | [**Level 02**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-02-configuration.md) | **Full Configuration** | `DapperExtensionsOptions`, string enums, dialect-specific JSON type handlers, DI options | [ConfigurationDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level02_Configuration/ConfigurationDemo.cs) |
 | [**Level 03**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-03-real-world-use-cases.md) | **Real-World CRUD & Pagination** | Offset pagination (`QueryPagedAsync`), single round-trip (`QueryPagedMultipleAsync`), Keyset (`QueryCursorPagedAsync`) | [PaginationAndCrudDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level03_RealWorldUseCases/PaginationAndCrudDemo.cs) |
 | [**Level 04**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-04-advanced-integration.md) | **Unit of Work & Multi-Map** | `IUnitOfWork`, `WithUnitOfWorkAsync<TResult>`, nested `ISavepoint`, `MultiMapBuilder<TReturn>` | [UnitOfWorkAndMultiMapDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level04_AdvancedIntegration/UnitOfWorkAndMultiMapDemo.cs) |
-| [**Level 05**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-05-bulk-processing.md) | **Bulk Processing** | PostgreSQL `UNNEST`, SQL Server `SqlBulkCopy`, SQLite/MySQL/Oracle batch builders | [BulkOperationsDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level05_BulkProcessing/BulkOperationsDemo.cs) |
+| [**Level 05**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-05-bulk-processing.md) | **Bulk Processing** | PostgreSQL `UNNEST`, SQL Server `SqlBulkCopy`, Oracle `INSERT ALL` batch builder, SQLite/MySQL batch builders | [BulkOperationsDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level05_BulkProcessing/BulkOperationsDemo.cs) |
 | [**Level 06**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-06-error-handling-and-resilience.md) | **Error Handling & Resilience** | Polly v8 pipelines (`Standard`, `CircuitBreaker`, `Aggressive`, `Conservative`), ADR-016, savepoint retry (ADR-014) | [ResilienceAndSavepointDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level06_ErrorHandlingAndResilience/ResilienceAndSavepointDemo.cs) |
 | [**Level 07**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-07-scalability-and-performance.md) | **Scalability & Native AOT** | Strict Native AOT, `[SqlEntity]` Roslyn Source Generator, zero-reflection `IDataReaderMapper<T>` | [NativeAotAndPerformanceDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level07_ScalabilityAndPerformance/NativeAotAndPerformanceDemo.cs) |
 | [**Level 08**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-08-customization.md) | **Customization** | Custom `ISqlTransientErrorDetector`, custom `MoneyTypeHandler`, custom AOT mappers | [CustomDetectorAndHandlerDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level08_Customization/CustomDetectorAndHandlerDemo.cs) |
 | [**Level 09**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-09-observability-and-health.md) | **Observability & Health Checks** | OpenTelemetry distributed tracing (`ActivitySource`), metrics (`Meter`), database probes (`DapperHealthCheck`) | [OpenTelemetryAndHealthChecksDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level09_ObservabilityAndHealth/OpenTelemetryAndHealthChecksDemo.cs) |
 | [**Level 10**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-10-enterprise-architecture.md) | **Enterprise Architecture** | Transactional Outbox pattern, domain repositories with `IUnitOfWork`, resilient sagas with savepoints | [EnterprisePatternsDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level10_EnterpriseArchitecture/EnterprisePatternsDemo.cs) |
+| [**Level 11**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/showcase/level-11-comprehensive-api-coverage.md) | **Comprehensive API Coverage** | Living verification of 20+ exposed methods across all 14 resilience pipelines, 6 dialect registrars, streaming, and grouped multimap | [Level11_ComprehensiveApiCoverageDemo.cs](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level11_ComprehensiveApiCoverage/Level11_ComprehensiveApiCoverageDemo.cs) |
 
 ### 📖 Technical Reference & Architecture Guides
 
 - [**Quick Start Guide**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/quickstart.md) — Get up and running in under 5 minutes.
 - [**Getting Started Guide**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/getting-started.md) — Comprehensive guide to foundational concepts, DI setup, and type mapping.
 - [**Architecture & Functional Map**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/architecture.md) — Complete architectural blueprint, layer transitions, and Mermaid diagrams.
+- [**Competitive Analysis & Capability Matrix**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/competitive-analysis.md) — Comparative benchmark and capability audit vs vanilla Dapper, Dapper.Contrib, RepoDb, and EF Core.
 - [**API Reference (Microsoft Learn Style)**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/api-reference.md) — Detailed specifications of all public interfaces, extension methods, and configuration options.
 - [**Best Practices & Architectural Guidelines**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/best-practices.md) — Mandatory design rules, ADR-016 / ADR-014 scoping mandates, and anti-patterns.
 - [**Cookbook (Production Recipes)**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/cookbook.md) — 13 ready-to-use recipes for Outbox, Sagas, Bulk streaming, and Keyset pagination.
 - [**Performance & Tuning Guide**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/performance-guide.md) — BenchmarkDotNet results, zero-allocation memory guidelines, and Native AOT benchmarks.
 - [**Troubleshooting Guide**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/troubleshooting.md) — Diagnosing SQLSTATE codes (25P02, 1205, SQLite locks) and Native AOT trimmer warnings.
 - [**Migration Guide**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/migration-guide.md) — Migrating incrementally from vanilla Dapper and Entity Framework Core.
-- [**Frequently Asked Questions (FAQ)**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/faq.md) — Technical justifications, concurrency questions, and architectural design choices.
+- [**Testing Architecture & Roadmap**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/testing-roadmap.md) — Shared in-memory test doubles, FIRST principles, and mutation testing coverage.
 - [**CI/CD & Quality Engineering**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/ci-cd-and-quality.md) — DevSecOps pipelines, Stryker.NET mutation testing matrix, and PR benchmark regression gates.
+- [**CI/CD Pipelines & Automation**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/ci-cd-pipelines.md) — Continuous delivery workflow, verification gates, and Sigstore attestation.
+- [**Frequently Asked Questions (FAQ)**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/faq.md) — Technical justifications, concurrency questions, and architectural design choices.
 - [**NuGet Packages & Compatibility**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/nuget-packages.md) — Complete package inventory, Central Package Management (CPM), and compatibility matrices.
 - [**Architectural Decision Records (ADRs)**](https://github.com/ericksonlopezf/dotnet-dapper-extensions/tree/main/docs/adr) — ADRs documenting design rationale:
-  - [ADR-001](docs/adr/adr-001-multi-provider-architecture-and-dialect-isolation.md) · Multi-Provider Architecture and Dialect Isolation
-  - [ADR-002](docs/adr/adr-002-unnest-bulk-strategy-postgresql.md) · PostgreSQL UNNEST Bulk Strategy
-  - [ADR-003](docs/adr/adr-003-decoupled-pagination-abstractions-and-counted-contract.md) · Decoupled Pagination Abstractions
-  - [ADR-004](docs/adr/adr-004-cancellation-token-propagation-in-resilience-pipelines.md) · CancellationToken Propagation in Resilience Pipelines
-  - [ADR-005](docs/adr/adr-005-coexistence-of-provider-transaction-extensions-and-unit-of-work.md) · Coexistence of Provider TransactionExtensions and Core UnitOfWork
-  - [ADR-006](docs/adr/adr-006-native-aot-and-trimming-compliance-enforcement.md) · Native AOT and Trimming Compliance
-  - [ADR-007](docs/adr/adr-007-multi-map-root-deduplication-and-1-to-n-grouping.md) · Multi-Map Root Deduplication and 1-to-N Grouping
-  - [ADR-008](docs/adr/adr-008-standard-type-handlers-and-di-boundary.md) · Standard Type Handlers and DI Boundary
-  - [ADR-009](docs/adr/adr-009-multi-provider-bulk-strategy.md) · Multi-Provider Bulk Strategy
-  - [ADR-010](docs/adr/adr-010-opentelemetry-observability-package.md) · OpenTelemetry Observability Package
-  - [ADR-011](docs/adr/adr-011-healthchecks-package-and-probe-architecture.md) · HealthChecks Package and Probe Architecture
-  - [ADR-012](docs/adr/adr-012-cursor-based-pagination-strategy.md) · Cursor-Based Pagination Strategy
-  - [ADR-013](docs/adr/adr-013-source-generator-for-aot-datareader-mapper.md) · Source Generator for Native AOT IDataReaderMapper
-  - [ADR-014](docs/adr/adr-014-savepoint-aware-resilience-retry.md) · Savepoint-Aware Resilience Retry
-  - [ADR-016](docs/adr/adr-016-resilience-pipeline-scope-wrap-unit-of-work.md) · Resilience Pipeline Scope Wrap Unit of Work
-  - [ADR-017](docs/adr/adr-017-ecosystem-convergence-resilience-and-uow-transaction-boundary.md) · Ecosystem Convergence Resilience and UoW Boundary
-  - [REJECT-011](docs/adr/reject-011-custom-expression-tree-interpreters-in-dapper.md) · REJECT: Custom Expression Tree Interpreters in Dapper
+  - [ADR-001](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-001-multi-provider-architecture-and-dialect-isolation.md) · Multi-Provider Architecture and Dialect Isolation
+  - [ADR-002](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-002-unnest-bulk-strategy-postgresql.md) · PostgreSQL UNNEST Bulk Strategy
+  - [ADR-003](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-003-decoupled-pagination-abstractions-and-counted-contract.md) · Decoupled Pagination Abstractions
+  - [ADR-004](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-004-cancellation-token-propagation-in-resilience-pipelines.md) · CancellationToken Propagation in Resilience Pipelines
+  - [ADR-005](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-005-coexistence-of-provider-transaction-extensions-and-unit-of-work.md) · Coexistence of Provider TransactionExtensions and Core UnitOfWork
+  - [ADR-006](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-006-native-aot-and-trimming-compliance-enforcement.md) · Native AOT and Trimming Compliance
+  - [ADR-007](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-007-multi-map-root-deduplication-and-1-to-n-grouping.md) · Multi-Map Root Deduplication and 1-to-N Grouping
+  - [ADR-008](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-008-standard-type-handlers-and-di-boundary.md) · Standard Type Handlers and DI Boundary
+  - [ADR-009](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-009-multi-provider-bulk-strategy.md) · Multi-Provider Bulk Strategy
+  - [ADR-010](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-010-opentelemetry-observability-package.md) · OpenTelemetry Observability Package
+  - [ADR-011](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-011-healthchecks-package-and-probe-architecture.md) · HealthChecks Package and Probe Architecture
+  - [ADR-012](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-012-cursor-based-pagination-strategy.md) · Cursor-Based Pagination Strategy
+  - [ADR-013](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-013-source-generator-for-aot-datareader-mapper.md) · Source Generator for Native AOT IDataReaderMapper
+  - [ADR-014](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-014-savepoint-aware-resilience-retry.md) · Savepoint-Aware Resilience Retry
+  - [ADR-015](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-015-withdrawn-dynamic-pipeline-preset-caching.md) · **[WITHDRAWN]** Dynamic Pipeline Preset Caching
+  - [ADR-016](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-016-resilience-pipeline-scope-wrap-unit-of-work.md) · Resilience Pipeline Scope Wrap Unit of Work
+  - [ADR-017](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-017-ecosystem-convergence-resilience-and-uow-transaction-boundary.md) · Ecosystem Convergence Resilience and UoW Boundary
+  - [ADR-018](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-018-architectural-boundary-and-coexistence-with-sql-builder.md) · Ecosystem Demarcation DapperExtensions vs SqlBuilder
+  - [ADR-019](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-019-async-streaming-dapper-streaming-extensions.md) · Async Streaming via DapperStreamingExtensions
+  - [REJECT-011](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/reject-011-custom-expression-tree-interpreters-in-dapper.md) · REJECT: Custom Expression Tree Interpreters in Dapper
 
 ---
 
@@ -252,13 +260,15 @@ Integrate compiled SQL queries with resilience pipelines configured specifically
 
 ```csharp
 using EricksonLopez.DapperExtensions.Resilience;
-using EricksonLopez.SqlBuilder.Abstractions;
+using EricksonLopez.SqlBuilder;             // ISqlCompiler, compiler factory
+using EricksonLopez.SqlBuilder.Abstractions; // SqlResult, ISqlQuery
 
 // Build or compile your SQL query
 SqlResult query = compiler.Compile(selectActiveProductsQuery);
 
 // Resolve dialect pipeline (e.g., PostgreSQL retry + circuit breaker)
-var pipeline = SqlResilienceDefaults.ForPostgreSql();
+// Use IResiliencePipeline canonical API (ADR-017): ForPostgreSqlPipeline() returns IResiliencePipeline
+var pipeline = SqlResilienceDefaults.ForPostgreSqlPipeline();
 
 // Execute resilient query with end-to-end cancellation token flow
 var products = await connection.QueryWithResilienceAsync<ProductDto>(
@@ -356,7 +366,8 @@ public sealed class OrderCommandHandler
 
     public async Task HandlePlaceOrderAsync(Order order, CancellationToken cancellationToken)
     {
-        var pipeline = SqlResilienceDefaults.ForPostgreSql();
+        // Use IResiliencePipeline canonical API (ADR-017)
+        var pipeline = SqlResilienceDefaults.ForPostgreSqlPipeline();
 
         // ADR-016: Wrap the complete Unit of Work inside the resilience pipeline
         await pipeline.ExecuteAsync(async ct =>
@@ -480,7 +491,8 @@ await connection.ExecuteAsync(new CommandDefinition(
 
 // Step 2: Transient-prone sub-operation isolated in a Savepoint (ADR-014)
 await uow.ExecuteInSavepointWithRetryAsync(
-    pipeline: SqlResilienceDefaults.ForPostgreSql(),
+    // Use IResiliencePipeline canonical API (ADR-017)
+    pipeline: SqlResilienceDefaults.ForPostgreSqlPipeline(),
     operation: async (unitOfWork, ct) =>
     {
         await connection.ExecuteAsync(new CommandDefinition(
@@ -497,11 +509,13 @@ await uow.CommitAsync(cancellationToken);
 
 ### 5. Zero-Reflection Native AOT Microservice with `[SqlEntity]`
 
-Decorate entity classes with `[SqlEntity]` to trigger compile-time `IDataReaderMapper<T>` generation, achieving 100% Native AOT compliance:
+Decorate entity classes with `[SqlEntity]` to trigger compile-time mapping method generation (`ReadFromDataReader`, `GetMultiMapReaderFactory`), achieving 100% Native AOT compliance:
 
 ```csharp
 using System.Data;
-using EricksonLopez.DapperExtensions.SourceGenerators;
+using EricksonLopez.DapperExtensions; // [SqlEntity] attribute is in the core package
+// Note: also install EricksonLopez.DapperExtensions.SourceGenerators (NuGet package)
+// to activate the Roslyn source generator that processes [SqlEntity] at compile time.
 
 [SqlEntity(TableName = "customers")]
 public sealed partial class CustomerEntity
@@ -523,7 +537,8 @@ public async Task<List<CustomerEntity>> GetAllCustomersAsync(IDbConnection conn,
     while (await reader.ReadAsync(ct))
     {
         // Generated compile-time mapper with ZERO reflection
-        results.Add(CustomerEntityMapper.Map(reader));
+        // The source generator adds static ReadFromDataReader() to the CustomerEntity partial class
+        results.Add(CustomerEntity.ReadFromDataReader(reader));
     }
     return results;
 }
@@ -533,9 +548,12 @@ public async Task<List<CustomerEntity>> GetAllCustomersAsync(IDbConnection conn,
 
 Execute the paginated dataset and total record count in a single database round-trip via multiple result grids:
 
+> **Note:** This example uses the `EricksonLopez.Pagination` package (`0.0.0-alpha.0` pre-release). API stability
+> is not guaranteed until a stable release. See [EricksonLopez.Pagination](https://github.com/ericksonlopezf/dotnet-pagination).
+
 ```csharp
 using EricksonLopez.DapperExtensions.PostgreSql.Pagination;
-using EricksonLopez.Pagination;
+using EricksonLopez.Pagination;             // pre-release alpha package
 using EricksonLopez.Pagination.Abstractions;
 
 public async Task<ICountedPagedList<ProductDto>> GetCatalogPageAsync(
@@ -580,6 +598,24 @@ builder.Services.AddDapperExtensions(options =>
 });
 ```
 
+#### String-Mapped Enum Type Handler
+
+To map database `VARCHAR`/`TEXT` columns to C# enums as their string names (instead of integer codes), register `StringEnumTypeHandler<TEnum>` manually:
+
+```csharp
+using Dapper;
+using EricksonLopez.DapperExtensions.TypeHandlers;
+
+// Register during application startup (e.g., in Program.cs before first query)
+SqlMapper.AddTypeHandler(new StringEnumTypeHandler<OrderStatus>());
+
+// Or use the centralized registrar helper:
+DapperTypeHandlerRegistrar.RegisterStringEnumHandler<OrderStatus>();
+// DapperTypeHandlerRegistrar.RegisterStringEnumHandler<PaymentMethod>();
+```
+
+The handler uses case-insensitive string comparison by default, mapping `"Pending"`, `"PENDING"`, and `"pending"` to `OrderStatus.Pending`.
+
 ### ASP.NET Core & Database Health Checks
 
 Integrate resilient database connectivity probes with Kubernetes readiness and liveness endpoints:
@@ -590,10 +626,15 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Npgsql;
 
 builder.Services.AddHealthChecks()
-    .AddCheck("postgres-db", new DapperHealthCheck(
-        connectionFactory: () => new NpgsqlConnection(builder.Configuration.GetConnectionString("PostgreSql")),
-        probeQuery: "SELECT 1;",
-        timeout: TimeSpan.FromSeconds(2)),
+    .AddDapperHealthCheck(
+        name: "postgres-db",
+        connectionFactory: (sp, ct) => Task.FromResult<IDbConnection>(
+            new NpgsqlConnection(builder.Configuration.GetConnectionString("PostgreSql"))),
+        configure: o =>
+        {
+            o.CommandText = "SELECT 1;";
+            o.Timeout = TimeSpan.FromSeconds(2);
+        },
         failureStatus: HealthStatus.Unhealthy,
         tags: ["ready", "db"]);
 ```
@@ -640,7 +681,69 @@ SqlMapper.AddTypeHandler(new JsonbTypeHandler<UserMetadata>(AppJsonContext.Defau
 
 ---
 
+### Async Streaming with `IAsyncEnumerable<T>`
+
+Stream large result sets with O(1) memory profile *for the streaming operation itself* using `DapperStreamingExtensions`. Unlike buffered `QueryAsync<T>`, rows are yielded one-by-one off the wire. If results are accumulated in a collection by the caller, overall memory becomes O(N):
+
+```csharp
+using EricksonLopez.DapperExtensions.Streaming;
+
+// Stream 100K+ rows without loading them all into memory
+await foreach (var order in connection.StreamAsync<OrderDto>(
+    "SELECT id, customer_id, status, total FROM orders WHERE status = 'Pending'",
+    cancellationToken: cancellationToken))
+{
+    await processor.HandleAsync(order, cancellationToken);
+}
+```
+
+> ⚠️ **Native AOT note:** `StreamAsync<T>` uses Dapper's `GetRowParser<T>()` internally (reflection-based).
+> For fully AOT-safe streaming, use `MultiMapBuilder<T>` with `[SqlEntity]` source-generated parsers instead.
+> See [ADR-006](https://github.com/ericksonlopezf/dotnet-dapper-extensions/blob/main/docs/adr/adr-006-native-aot-and-trimming-compliance-enforcement.md) for details.
+
+### Roslyn Incremental Source Generator for Native AOT
+
+Eliminate runtime reflection (`DynamicMethod` / IL Emit) and trimming warnings (`IL2026`, `IL3050`) by decorating entities with `[SqlEntity]`. The incremental generator automatically adds compile-time static `ReadFromDataReader(IDataReader)` and `GetMultiMapReaderFactory()` methods to partial classes:
+
+```csharp
+using EricksonLopez.DapperExtensions.SourceGenerators;
+
+[SqlEntity(TableName = "products")]
+public sealed partial class ProductEntity
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public DateOnly CreatedAt { get; set; }
+}
+```
+
+### Minimal APIs & Ecosystem Coexistence
+
+Compose `EricksonLopez.DapperExtensions` seamlessly with `EricksonLopez.SqlBuilder`, `EricksonLopez.Pagination`, and ASP.NET Core Minimal APIs:
+
+```csharp
+app.MapGet("/api/v1/orders", async (
+    int? pageIndex,
+    int? pageSize,
+    IDbConnection db,
+    CancellationToken ct) =>
+{
+    var pagination = PaginationParameters.Create(pageIndex ?? 1, pageSize ?? 20);
+
+    var orders = await db.QueryPagedAsync<OrderDto>(
+        sql: "SELECT id, total, created_at FROM orders ORDER BY id",
+        pagination: pagination,
+        cancellationToken: ct);
+
+    return Results.Ok(orders);
+});
+```
+
+---
+
 ## 🧪 Testing & Quality
+
 
 The **EricksonLopez.DapperExtensions** repository is maintained under strict DevSecOps and continuous quality gates:
 
@@ -677,11 +780,59 @@ flowchart TD
 - **Deterministic Assembly Signing**: Every published assembly is strong-named (`EricksonLopez.snk`) with a canonical public key.
 - **Supply Chain Security**: Sigstore build provenance attestation via `actions/attest-build-provenance` and passwordless OIDC publishing via `NuGet/login@v1`.
 
+### Deterministic In-Memory Unit Testing
+
+The test suite validates Unit of Work transactional lifecycles, automatic rollbacks, and Polly v8 resilience pipelines 100% in-memory without requiring external database daemons or network dependencies:
+
+```csharp
+using System.Data;
+using AwesomeAssertions;
+using Dapper;
+using EricksonLopez.DapperExtensions.UnitOfWork;
+using Microsoft.Data.Sqlite;
+using Xunit;
+
+public sealed class UnitOfWorkLifecycleTests : IAsyncLifetime
+{
+    private SqliteConnection _connection = null!;
+
+    public async Task InitializeAsync()
+    {
+        _connection = new SqliteConnection("Data Source=:memory:");
+        await _connection.OpenAsync();
+        await _connection.ExecuteAsync("CREATE TABLE audit_log (id INTEGER PRIMARY KEY, msg TEXT NOT NULL);");
+    }
+
+    public async Task DisposeAsync() => await _connection.DisposeAsync();
+
+    [Fact]
+    public async Task WithUnitOfWorkAsync_WhenExceptionThrown_RollsBackAutomatically()
+    {
+        var act = async () => await _connection.WithUnitOfWorkAsync(async (uow, ct) =>
+        {
+            await _connection.ExecuteAsync(
+                "INSERT INTO audit_log (id, msg) VALUES (1, 'Transacted Message');",
+                transaction: uow.Transaction);
+
+            throw new InvalidOperationException("Simulated transient failure triggering abort");
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+
+        // Verifies deterministic transaction rollback: table remains pristine
+        var count = await _connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM audit_log;");
+        count.Should().Be(0);
+    }
+}
+```
+
 ---
 
 ## ⚡ Performance Benchmarks
 
 > **Environment:** .NET 10.0.10, X64 RyuJIT AVX-512, Linux Containerized PostgreSQL 16, BenchmarkDotNet v0.15.8
+>
+> **Note:** Benchmark results measured on .NET 10.0.10. Results may vary on .NET 8 or .NET 9.
 
 ### Bulk Insertion: PostgreSQL `UNNEST` vs Row-by-Row
 
@@ -703,6 +854,20 @@ flowchart TD
 | `QueryPagedAsync` (`OFFSET 100,000`) | Page 5,000 (Offset 100,000) | 165.20 ms | High I/O Buffer Spill ($O(N)$) |
 | **`QueryCursorPagedAsync` (Keyset)** | **Any Page Depth (Cursor Seek)** | **0.85 ms** | **Direct B-Tree Index Seek ($O(\log N)$)** |
 
+> Benchmark results are representative for the specified environment. Actual values depend on hardware, network latency, and DB server configuration.
+
+### Type Handlers & Infrastructure Micro-Benchmarks
+
+> Baseline measurements from regression gate suite (`benchmarks/results/baseline.json`).
+
+| Benchmark Method | Mean Latency | Allocated Memory | Optimization & Target |
+|---|---:|---:|---|
+| `ExecuteInTransactionAsync_Performance` | 15.00 µs | 256 B | Scope allocation and disposal lifecycle |
+| `JsonbTypeHandler_Serialize_Performance` | 420.0 ns | 128 B | Reflection-free STJ source generator serialization |
+| `JsonbTypeHandler_Deserialize_Performance` | 380.0 ns | 192 B | Reflection-free STJ source generator deserialization |
+| `QueryPagedAsync_100Rows` | 2.50 ms | 64 KB | Standard offset pagination execution |
+| `QueryPagedAsync_1000Rows` | 18.00 ms | 512 KB | Standard offset pagination execution |
+
 ---
 
 ## 🌐 Compatibility & Technical Matrix
@@ -716,12 +881,12 @@ flowchart TD
 | `EricksonLopez.DapperExtensions.HealthChecks` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible | ✅ Trimmable | ASP.NET Core `IHealthCheck` |
 | `EricksonLopez.DapperExtensions.OpenTelemetry` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible | ✅ Trimmable | `ActivitySource` & `Meter` |
 | `EricksonLopez.DapperExtensions.SourceGenerators` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Native | ✅ Native | Roslyn analyzer (`netstandard2.0`) |
-| `EricksonLopez.DapperExtensions.PostgreSql` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | Npgsql 10.x driver |
-| `EricksonLopez.DapperExtensions.SqlServer` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | Microsoft.Data.SqlClient 7.x |
-| `EricksonLopez.DapperExtensions.MySql` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | MySqlConnector 2.6.x |
-| `EricksonLopez.DapperExtensions.MariaDb` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | MySqlConnector 2.6.x |
-| `EricksonLopez.DapperExtensions.Oracle` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | Oracle.ManagedDataAccess 23.x |
-| `EricksonLopez.DapperExtensions.Sqlite` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | Microsoft.Data.Sqlite 10.x |
+| `EricksonLopez.DapperExtensions.PostgreSql` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | Npgsql 8.x (8.0.6) |
+| `EricksonLopez.DapperExtensions.SqlServer` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | Microsoft.Data.SqlClient 5.x (5.2.2) |
+| `EricksonLopez.DapperExtensions.MySql` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | MySqlConnector 2.x (2.4.0) |
+| `EricksonLopez.DapperExtensions.MariaDb` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | MySqlConnector 2.x (2.4.0) |
+| `EricksonLopez.DapperExtensions.Oracle` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | Oracle.ManagedDataAccess 23.x (23.7.0) |
+| `EricksonLopez.DapperExtensions.Sqlite` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* | ✅ Trimmable | Microsoft.Data.Sqlite 9.x (9.0.2) |
 
 \* *Full Native AOT safety requires decorating entities with `[SqlEntity]` and referencing `EricksonLopez.DapperExtensions.SourceGenerators`. Without source-generated `IDataReaderMapper<T>` mappers, Dapper's internal reflection fallback is invoked.*
 
@@ -738,6 +903,8 @@ flowchart TD
 | **Transient Error Detector** | `NpgsqlException` | `SqlException` | `MySqlException` | `MySqlException` | `OracleException` | `SqliteException` |
 
 ---
+
+> 🛡️ **Target Framework & Lifecycle Policy**: First-class multi-targeting across `.NET 10` (Modern LTS), `.NET 9` (STS), and `.NET 8` (Enterprise LTS) — along with `.NET Standard 2.0` for Roslyn analyzers and source generators — is actively maintained. Full backward compatibility is guaranteed until Microsoft officially reaches End-of-Life (EOL) for .NET 8 and .NET 9 in November 2026, at which milestone the ecosystem will transition to .NET 10 and .NET 11.
 
 ## 🏛️ Architecture & Design Principles
 
@@ -818,6 +985,38 @@ sequenceDiagram
     deactivate UoW
     deactivate Res
     UoW->>DB: Dispose Transaction & Close Connection
+```
+
+### Unit of Work & Savepoint State Lifecycle
+
+```mermaid
+stateDiagram-v8
+    [*] --> Active : connection.BeginUnitOfWorkAsync()
+
+    state Active {
+        [*] --> ExecutingOperations : Open Connection & Transaction
+        ExecutingOperations --> ExecutingOperations : ExecuteAsync / QueryAsync / BulkInsertAsync
+        ExecutingOperations --> InSavepoint : CreateSavepointAsync("SP_NAME")
+
+        state InSavepoint {
+            [*] --> SubOperation : Execute SQL in Savepoint Scope
+            SubOperation --> SavepointReleased : Savepoint.ReleaseAsync()
+            SubOperation --> SavepointRolledBack : Savepoint.RollbackAsync()<br/>(Transient Exception)
+            SavepointRolledBack --> SubOperation : Retry within Savepoint (ADR-014)
+        }
+
+        SavepointReleased --> ExecutingOperations
+    }
+
+    Active --> Committing : uow.CommitAsync(ct)
+    Committing --> Committed : Database COMMIT OK
+    Committed --> Disposed : await uow.DisposeAsync()
+
+    Active --> RollingBack : uow.RollbackAsync() / Exception / Dispose Without Commit
+    RollingBack --> RolledBack : Deterministic ROLLBACK
+    RolledBack --> Disposed : await uow.DisposeAsync()
+
+    Disposed --> [*]
 ```
 
 ### Core Architectural Invariants

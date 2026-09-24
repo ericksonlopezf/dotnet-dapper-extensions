@@ -72,17 +72,25 @@ public static class BulkExtensions
         var sqlConnection = connection as SqlConnection;
         SqlTransaction? sqlTransaction = transaction as SqlTransaction;
 
-        if (connection.State != ConnectionState.Open)
+        bool wasClosed = connection.State == ConnectionState.Closed;
+        if (wasClosed)
             await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        return await effectiveExecutor(
-            sqlConnection!,
-            destinationTableName,
-            dataTable,
-            sqlTransaction,
-            batchSize,
-            bulkCopyTimeout,
-            cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await effectiveExecutor(
+                sqlConnection!,
+                destinationTableName,
+                dataTable,
+                sqlTransaction,
+                batchSize,
+                bulkCopyTimeout,
+                cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (wasClosed) await connection.CloseAsync().ConfigureAwait(false);
+        }
     }
 
     internal static readonly Func<SqlConnection, string, DataTable, SqlTransaction?, int, int, CancellationToken, Task<int>> DefaultBulkCopyExecutor =
@@ -154,8 +162,8 @@ public static class BulkExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentException.ThrowIfNullOrWhiteSpace(sql);
 
-        if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        // Dapper internally manages connection state (open/close) automatically.
+        // We defer to SqlMapper.ExecuteAsync for correct connection lifecycle.
 
         var command = new Dapper.CommandDefinition(
             sql,
@@ -192,8 +200,8 @@ public static class BulkExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentException.ThrowIfNullOrWhiteSpace(sql);
 
-        if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        // Dapper internally manages connection state (open/close) automatically.
+        // We defer to SqlMapper.ExecuteAsync for correct connection lifecycle.
 
         var command = new Dapper.CommandDefinition(
             sql,

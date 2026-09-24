@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 High-throughput batch inserting and upserting in PostgreSQL often suffers from row-by-row overhead or complex `COPY` stream setup that is hard to combine with transactions and Dapper parameters.
 

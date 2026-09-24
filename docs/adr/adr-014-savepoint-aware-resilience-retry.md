@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 In standard relational databases (especially PostgreSQL), executing a statement that fails inside an open transaction aborts the entire transaction block (`current transaction is aborted, commands ignored until end of transaction block`). Retrying statements directly inside an active transaction without rolling back intermediate failed commands leaves the transaction corrupted.
 

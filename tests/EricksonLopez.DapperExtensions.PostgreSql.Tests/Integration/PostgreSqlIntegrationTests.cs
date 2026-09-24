@@ -1,6 +1,4 @@
 // Copyright © Erickson Lopez. MIT License.
-using Xunit;
-using EricksonLopez.SqlBuilder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,14 +7,16 @@ using System.Threading.Tasks;
 using AwesomeAssertions;
 using Dapper;
 using EricksonLopez.DapperExtensions.PostgreSql.Bulk;
-using EricksonLopez.Pagination;
 using EricksonLopez.DapperExtensions.PostgreSql.Pagination;
 using EricksonLopez.DapperExtensions.PostgreSql.Transactions;
+using EricksonLopez.DapperExtensions.Testing.Common;
+using EricksonLopez.Pagination;
 using EricksonLopez.Pagination.Abstractions;
+using EricksonLopez.SqlBuilder;
 using Npgsql;
 using NpgsqlTypes;
-using EricksonLopez.DapperExtensions.Testing.Common;
 using Testcontainers.PostgreSql;
+using Xunit;
 
 namespace EricksonLopez.DapperExtensions.PostgreSql.Tests.Integration;
 

@@ -15,12 +15,23 @@ namespace EricksonLopez.DapperExtensions.Streaming;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>Memory Profile $O(1)$:</b> Standard Dapper <c>QueryAsync&lt;T&gt;</c> buffers the entire result set into an in-memory list
+/// <b>Memory Profile O(1) for the streaming operation:</b> Standard Dapper <c>QueryAsync&lt;T&gt;</c> buffers the entire result set into an in-memory list
 /// before returning. For large datasets (10K+ rows), this causes high LOH allocations and GC Gen 2 pressure.
+/// These extension methods stream rows one-by-one off the wire, keeping the streaming operation itself at O(1) memory.
+/// Note: if the caller accumulates results in a <c>List&lt;T&gt;</c> or similar collection, overall memory usage becomes O(N).
 /// </para>
 /// <para>
 /// These extension methods execute unbuffered queries using Dapper's row parsers,
 /// streaming rows sequentially off the wire and yielding each entity on-the-fly. The caller must consume the stream promptly.
+/// </para>
+/// <para>
+/// <b>Exception propagation:</b> Database provider exceptions (e.g., <c>NpgsqlException</c>, <c>SqlException</c>)
+/// thrown during reader execution or row reading propagate directly to the caller without being caught or wrapped.
+/// </para>
+/// <para>
+/// <b>Native AOT limitation (ADR-006, ADR-019):</b> <c>StreamAsync&lt;T&gt;</c> uses Dapper's <c>GetRowParser&lt;T&gt;()</c>
+/// internally, which is reflection-based. For fully AOT-safe streaming, use <c>MultiMapBuilder&lt;T&gt;</c>
+/// with <c>[SqlEntity]</c> source-generated parsers instead.
 /// </para>
 /// </remarks>
 public static class DapperStreamingExtensions
@@ -35,9 +46,9 @@ public static class DapperStreamingExtensions
     /// <param name="transaction">Optional active database transaction.</param>
     /// <param name="commandTimeout">Optional command timeout in seconds.</param>
     /// <param name="commandType">Optional command type (Text, StoredProcedure, TableDirect).</param>
-    /// <param name="cancellationToken">Cancellation token for aborting stream consumption.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
     /// <returns>An asynchronous stream of <typeparamref name="T"/> entities.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="connection"/> or <paramref name="sql"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="connection"/> or <paramref name="sql"/> is <see langword="null"/></exception>
     public static IAsyncEnumerable<T> StreamAsync<T>(
         this IDbConnection connection,
         string sql,
@@ -68,9 +79,9 @@ public static class DapperStreamingExtensions
     /// <typeparam name="T">The entity or projected type.</typeparam>
     /// <param name="connection">The database connection.</param>
     /// <param name="command">The command definition specifying query parameters, timeout, and cancellation token.</param>
-    /// <param name="cancellationToken">Cancellation token for the enumerator.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
     /// <returns>An asynchronous stream of <typeparamref name="T"/> entities.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="connection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="connection"/> is <see langword="null"/></exception>
     public static IAsyncEnumerable<T> StreamAsync<T>(
         this IDbConnection connection,
         CommandDefinition command,

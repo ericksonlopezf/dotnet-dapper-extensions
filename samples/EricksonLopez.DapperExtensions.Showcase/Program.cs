@@ -12,6 +12,7 @@ using EricksonLopez.DapperExtensions.Showcase.Levels.Level07_ScalabilityAndPerfo
 using EricksonLopez.DapperExtensions.Showcase.Levels.Level08_Customization;
 using EricksonLopez.DapperExtensions.Showcase.Levels.Level09_ObservabilityAndHealth;
 using EricksonLopez.DapperExtensions.Showcase.Levels.Level10_EnterpriseArchitecture;
+using EricksonLopez.DapperExtensions.Showcase.Levels.Level11_ComprehensiveApiCoverage;
 
 namespace EricksonLopez.DapperExtensions.Showcase;
 
@@ -51,7 +52,7 @@ public static class Program
             else
             {
                 // Run all levels sequentially
-                for (int lvl = 0; lvl <= 10; lvl++)
+                for (int lvl = 0; lvl <= 11; lvl++)
                 {
                     await ExecuteLevelAsync(lvl).ConfigureAwait(false);
                 }
@@ -113,8 +114,11 @@ public static class Program
             case 10:
                 await EnterprisePatternsDemo.RunAsync().ConfigureAwait(false);
                 break;
+            case 11:
+                await Level11_ComprehensiveApiCoverageDemo.RunAsync().ConfigureAwait(false);
+                break;
             default:
-                Console.WriteLine($"Unknown level: {level}. Valid levels: 0 to 10.");
+                Console.WriteLine($"Unknown level: {level}. Valid levels: 0 to 11.");
                 break;
         }
     }

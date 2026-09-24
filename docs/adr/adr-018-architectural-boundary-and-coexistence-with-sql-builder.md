@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 
 Across the EricksonLopez data access layer, two major packages operate at Tier 2:
@@ -29,8 +32,8 @@ We formally declare the permanent architectural boundary between `EricksonLopez.
 │ SQL Query Building & Compilation  │ EricksonLopez.SqlBuilder           │
 │ Dialect Syntax & AST Visitors     │ EricksonLopez.SqlBuilder           │
 │ SQL Injection Roslyn Analyzers    │ EricksonLopez.SqlBuilder           │
-│ [SqlEntity] AST Code Generation   │ EricksonLopez.SqlBuilder           │
 ├───────────────────────────────────┼────────────────────────────────────┤
+│ [SqlEntity] DataReader Hydration  │ EricksonLopez.DapperExtensions     │
 │ Unit of Work & Savepoints         │ EricksonLopez.DapperExtensions     │
 │ Protocol Bulk Operations (UNNEST) │ EricksonLopez.DapperExtensions     │
 │ Multi-Map Relational Hydration    │ EricksonLopez.DapperExtensions     │
@@ -43,7 +46,7 @@ We formally declare the permanent architectural boundary between `EricksonLopez.
 - `DapperExtensions` owns execution over `IDbConnection` and `IDbTransaction`.
 - It manages transactional integrity (`IUnitOfWork`, `ISavepoint`, `ExecuteInSavepointWithRetryAsync`).
 - It manages high-throughput bulk ingestion (`EricksonLopez.DapperExtensions.PostgreSql.Bulk` with `UNNEST`, `SqlBulkCopy`, `INSERT ALL`).
-- It manages Native AOT multi-mapping (`MultiMapBuilder`, `IDataReaderMapper<T>`).
+- It manages Native AOT multi-mapping (`MultiMapBuilder`, `[SqlEntity]` Roslyn Source Generator, `IDataReaderMapper<T>`).
 - It manages unbuffered reactive streaming (`IAsyncEnumerable<T>`).
 
 ### 2. `EricksonLopez.SqlBuilder` is the Canonical Query Compiler Owner

@@ -11,21 +11,11 @@ Thank you for your interest in contributing to **EricksonLopez.DapperExtensions*
 - **Docker / Testcontainers**: Required for running end-to-end integration test suites across containerized database engines.
 - **Node.js**: Required for local execution of mutation gate scripts (`scripts/verify-mutation-gate.js`).
 
-### Sibling Repository Dependencies
+### Ecosystem Dependencies & Central Package Management (CPM)
 
-The `EricksonLopez.DapperExtensions` core project and dialect providers have local `ProjectReference` dependencies on two sibling repositories:
+All upstream ecosystem dependencies (`EricksonLopez.Pagination.Abstractions`, `EricksonLopez.Pagination`, `EricksonLopez.Resilience`, `EricksonLopez.SqlBuilder.Abstractions`) are consumed directly as **NuGet package references** managed centrally via `Directory.Packages.props` (Central Package Management).
 
-- **`dotnet-pagination`**: Provides `EricksonLopez.Pagination.Abstractions` and `EricksonLopez.Pagination` — pagination contracts and implementations.
-- **`dotnet-sql-builder`**: Provides `EricksonLopez.SqlBuilder.Abstractions` — SQL builder abstraction contracts.
-
-To build locally, ensure these sibling repositories are cloned to the same parent directory as `dotnet-dapper-extensions`:
-
-```
-<parent-dir>/
-├── dotnet-dapper-extensions/   ← this repository
-├── dotnet-pagination/           ← required sibling
-└── dotnet-sql-builder/          ← required sibling
-```
+The repository is completely self-contained; no external sibling clones or local repository linking are required to restore, build, or execute the test suite.
 
 ---
 
@@ -33,7 +23,7 @@ To build locally, ensure these sibling repositories are cloned to the same paren
 
 ### 1. Restore & Build
 ```bash
-# Clone the repository and sibling dependencies
+# Clone the repository
 git clone https://github.com/ericksonlopezf/dotnet-dapper-extensions.git dotnet-dapper-extensions
 cd dotnet-dapper-extensions
 

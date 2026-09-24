@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 EricksonLopez.DapperExtensions includes DapperStreamingExtensions, a public static class in the
 EricksonLopez.DapperExtensions.Streaming namespace that provides two StreamAsync<T> overloads returning

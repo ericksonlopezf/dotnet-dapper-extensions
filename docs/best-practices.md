@@ -49,7 +49,7 @@ await connection.ExecuteAsync(insertOrderSql, orderParams, uow.Transaction);
 
 // Step 2: Optional / transient-prone sub-operation isolated in a savepoint (ADR-014)
 await uow.ExecuteInSavepointWithRetryAsync(
-    pipeline: SqlResilienceDefaults.ForPostgreSql(),
+    pipeline: SqlResilienceDefaults.ForPostgreSqlPipeline(),
     operation: async (unitOfWork, ct) =>
     {
         await connection.ExecuteAsync(reserveInventorySql, invParams, unitOfWork.Transaction);
@@ -65,7 +65,7 @@ await uow.CommitAsync();
 When targeting Native AOT (`PublishAot=true`), avoid runtime reflection mapping:
 
 1. **Annotate Models**: Use `[SqlEntity]` on domain models.
-2. **Roslyn Generator**: Let `EricksonLopez.DapperExtensions.SourceGenerators` emit compile-time `IDataReaderMapper<T>` implementations.
+2. **Roslyn Generator**: Let `EricksonLopez.DapperExtensions.SourceGenerators` emit compile-time `ReadFromDataReader()` and `GetMultiMapReaderFactory()` static methods on the annotated partial class (these satisfy the `MultiMapBuilder<T>` AOT path; they are **not** implementations of `IDataReaderMapper<T>`).
 3. **Avoid Dynamic Expressions**: Dynamic SQL building should use strongly-typed builders or compile-time string constants rather than runtime expression tree visitors ([REJECT-011](adr/reject-011-custom-expression-tree-interpreters-in-dapper.md)).
 
 ```csharp
@@ -116,7 +116,7 @@ public async Task<ICountedPagedList<ProductDto>> GetCatalogAsync(
 | Anti-Pattern | Reason / Risk | Recommended Alternative |
 |---|---|---|
 | Retrying individual commands inside an active transaction | Causes transaction state poisoning (SQLSTATE 25P02 in PG) | Wrap `IUnitOfWork` or use `ExecuteInSavepointWithRetryAsync` |
-| Using reflection in hot-path loops | Trimming warnings and Native AOT runtime crashes | Use `[SqlEntity]` and source-generated `IDataReaderMapper<T>` |
+| Using reflection in hot-path loops | Trimming warnings and Native AOT runtime crashes | Use `[SqlEntity]` for compile-time static mapping methods (`ReadFromDataReader`, `GetMultiMapReaderFactory`) or implement `IDataReaderMapper<T>` manually |
 | Relying on `OFFSET` for millions of rows | $O(N)$ linear index degradation on high page numbers | Use `QueryCursorPagedAsync<T>` (Keyset pagination) |
 | Hardcoding non-transient retry policies | Retrying syntax errors or constraint violations wastes resources | Use `ISqlTransientErrorDetector` and `SqlResilienceDefaults` |
 | Manual transaction commit without try/catch rollback | Unhandled exceptions leave connections and locks dangling | Use `WithUnitOfWorkAsync` for deterministic async cleanup |

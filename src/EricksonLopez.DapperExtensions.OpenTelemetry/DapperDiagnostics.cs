@@ -11,12 +11,12 @@ namespace EricksonLopez.DapperExtensions.OpenTelemetry;
 public static class DapperDiagnostics
 {
     /// <summary>
-    /// The diagnostic source name for tracing and metrics.
+    /// Defines the diagnostic source name for tracing and metrics.
     /// </summary>
     public const string SourceName = "EricksonLopez.DapperExtensions";
 
     /// <summary>
-    /// The diagnostic instrumentation version.
+    /// Defines the diagnostic instrumentation version.
     /// </summary>
     public const string Version = "2.0.0";
 
@@ -63,37 +63,37 @@ public static class DapperDiagnostics
         description: "Total resilience retries executed for database operations");
 
     /// <summary>
-    /// The OpenTelemetry semantic convention attribute name for the database system identifier.
+    /// Defines the OpenTelemetry semantic convention attribute name for the database system identifier.
     /// </summary>
     public const string TagDbSystem = "db.system";
 
     /// <summary>
-    /// The OpenTelemetry semantic convention attribute name for the database name.
+    /// Defines the OpenTelemetry semantic convention attribute name for the database name.
     /// </summary>
     public const string TagDbName = "db.name";
 
     /// <summary>
-    /// The OpenTelemetry semantic convention attribute name for the executed database statement.
+    /// Defines the OpenTelemetry semantic convention attribute name for the executed database statement.
     /// </summary>
     public const string TagDbStatement = "db.statement";
 
     /// <summary>
-    /// The OpenTelemetry semantic convention attribute name for the executed database operation.
+    /// Defines the OpenTelemetry semantic convention attribute name for the executed database operation.
     /// </summary>
     public const string TagDbOperation = "db.operation";
 
     /// <summary>
-    /// The OpenTelemetry semantic convention attribute name for the number of rows affected.
+    /// Defines the OpenTelemetry semantic convention attribute name for the number of rows affected.
     /// </summary>
     public const string TagDbRowsAffected = "db.rows_affected";
 
     /// <summary>
-    /// The OpenTelemetry semantic convention attribute name for the database server address.
+    /// Defines the OpenTelemetry semantic convention attribute name for the database server address.
     /// </summary>
     public const string TagServerAddress = "server.address";
 
     /// <summary>
-    /// The OpenTelemetry semantic convention attribute name for the error classification type.
+    /// Defines the OpenTelemetry semantic convention attribute name for the error classification type.
     /// </summary>
     public const string TagErrorType = "error.type";
 }

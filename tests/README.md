@@ -27,27 +27,32 @@ The test suite strictly adheres to foundational software quality and reliability
 
 ```text
 tests/
-├── EricksonLopez.DapperExtensions.Testing.Common/      # Shared test infrastructure library
+├── EricksonLopez.DapperExtensions.Testing.Common/            # Shared test infrastructure library
 │   ├── DialectBases/
-│   │   ├── PagedQueryExtensionsTestsBase.cs            # Abstract base test suite for pagination (ANSI/LIMIT)
-│   │   └── TransactionExtensionsTestsBase.cs           # Abstract base test suite for transaction extensions
-│   ├── BulkTestDataFactory.cs                          # Centralized product entities, data tables, and batch generators
-│   ├── FakeTimeProvider.cs                             # Virtual time provider for deterministic Polly v8 tests
-│   ├── TestAdoCommand.cs                               # In-memory DbCommand test double
-│   ├── TestAdoConnection.cs                            # In-memory DbConnection test double with delegate hooks
-│   ├── TestAdoDataReader.cs                            # Simulated DbDataReader for Dapper row mapping
-│   ├── TestAdoParameter.cs                             # DbParameter and DbParameterCollection test double
-│   ├── TestAdoTransaction.cs                           # DbTransaction spy verifying CommitAsync/RollbackAsync
-│   └── TestDbException.cs                              # Concrete DbException test double
-├── EricksonLopez.DapperExtensions.Tests/               # Core: Polly resilience, UnitOfWork, Streaming, TypeHandlers
-├── EricksonLopez.DapperExtensions.OpenTelemetry.Tests/ # OpenTelemetry tracing, spans, and ActivitySource
-├── EricksonLopez.DapperExtensions.SqlServer.Tests/     # SQL Server dialect + BulkCopy + Testcontainers
-├── EricksonLopez.DapperExtensions.PostgreSql.Tests/   # PostgreSQL dialect + BulkCopy + Testcontainers
-├── EricksonLopez.DapperExtensions.MySql.Tests/        # MySQL dialect + Bulk + Testcontainers
-├── EricksonLopez.DapperExtensions.MariaDb.Tests/      # MariaDB dialect + Bulk + Testcontainers
-├── EricksonLopez.DapperExtensions.Oracle.Tests/       # Oracle dialect + Bulk + Testcontainers
-├── EricksonLopez.DapperExtensions.Sqlite.Tests/       # SQLite dialect + Keyset + In-Memory Integration
-└── EricksonLopez.DapperExtensions.AotSmokeTest/       # Native AOT publish validation (IL trimming/AOT gates)
+│   │   ├── PagedQueryExtensionsTestsBase.cs                  # Abstract base test suite for pagination (ANSI/LIMIT)
+│   │   └── TransactionExtensionsTestsBase.cs                 # Abstract base test suite for transaction extensions
+│   ├── BulkTestDataFactory.cs                                # Centralized product entities, data tables, and batch generators
+│   ├── FakeTimeProvider.cs                                   # Virtual time provider for deterministic Polly v8 tests
+│   ├── TestAdoCommand.cs                                     # In-memory DbCommand test double
+│   ├── TestAdoConnection.cs                                  # In-memory DbConnection test double with delegate hooks
+│   ├── TestAdoDataReader.cs                                  # Simulated DbDataReader for Dapper row mapping
+│   ├── TestAdoParameter.cs                                   # DbParameter and DbParameterCollection test double
+│   ├── TestAdoTransaction.cs                                 # DbTransaction spy verifying CommitAsync/RollbackAsync
+│   └── TestDbException.cs                                    # Concrete DbException test double
+├── EricksonLopez.DapperExtensions.Tests/                     # Core: Streaming, TypeHandlers, MultiMap, SqlEntity
+├── EricksonLopez.DapperExtensions.Tests.Resilience/          # Core: Polly resilience pipelines, transient detectors, savepoints
+├── EricksonLopez.DapperExtensions.Tests.UnitOfWork/          # Core: Unit of Work lifecycles, nested savepoints, guards
+├── EricksonLopez.DapperExtensions.DependencyInjection.Tests/ # DI registration tests (AddDapperExtensions)
+├── EricksonLopez.DapperExtensions.HealthChecks.Tests/        # Health check probe unit and execution tests
+├── EricksonLopez.DapperExtensions.OpenTelemetry.Tests/       # OpenTelemetry tracing, spans, and ActivitySource
+├── EricksonLopez.DapperExtensions.SourceGenerators.Tests/    # Roslyn incremental generator verification & compilation tests
+├── EricksonLopez.DapperExtensions.SqlServer.Tests/           # SQL Server dialect + BulkCopy + Testcontainers
+├── EricksonLopez.DapperExtensions.PostgreSql.Tests/         # PostgreSQL dialect + UNNEST + Testcontainers
+├── EricksonLopez.DapperExtensions.MySql.Tests/              # MySQL dialect + Bulk + Testcontainers
+├── EricksonLopez.DapperExtensions.MariaDb.Tests/            # MariaDB dialect + Bulk + Testcontainers
+├── EricksonLopez.DapperExtensions.Oracle.Tests/             # Oracle dialect + Bulk + Testcontainers
+├── EricksonLopez.DapperExtensions.Sqlite.Tests/             # SQLite dialect + Keyset + In-Memory Integration
+└── EricksonLopez.DapperExtensions.AotSmokeTest/             # Native AOT publish validation (IL trimming/AOT gates)
 ```
 
 ---

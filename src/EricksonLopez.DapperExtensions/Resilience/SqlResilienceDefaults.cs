@@ -35,6 +35,16 @@ public static class SqlResilienceDefaults
     ///   <item>30-second total timeout</item>
     /// </list>
     /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method returns a <see cref="Polly.ResiliencePipeline"/> (the low-level Polly v8 type).
+    /// Per ADR-017, the canonical ecosystem API returns <c>EricksonLopez.Resilience.IResiliencePipeline</c>.
+    /// Use the <c>For*Pipeline()</c> factory methods (e.g., <c>ForPostgreSqlPipeline()</c>,
+    /// <c>ForSqlServerPipeline()</c>) to obtain the canonical <c>IResiliencePipeline</c> wrappers.
+    /// The <see cref="ResiliencePipeline"/> overloads are retained as first-class compatibility APIs
+    /// and are not marked <c>[Obsolete]</c>. See ADR-017.
+    /// </para>
+    /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="detector"/> is <see langword="null"/></exception>
     public static ResiliencePipeline Standard(ISqlTransientErrorDetector detector, TimeProvider? timeProvider = null)
     {
@@ -348,42 +358,62 @@ public static class SqlResilienceDefaults
     // ─── Provider-specific canonical shortcuts ───────────────────────────────
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> pre-configured for SQL Server.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> configured for SQL Server operations.</returns>
     public static IResiliencePipeline ForSqlServerPipeline(TimeProvider? timeProvider = null)
         => StandardPipeline(SqlServerTransientErrorDetector.Default, "sql-sqlserver-standard", timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for SQL Server.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> with circuit breaker configured for SQL Server operations.</returns>
     public static IResiliencePipeline ForSqlServerWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(SqlServerTransientErrorDetector.Default, "sql-sqlserver-cb", timeProvider: timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> pre-configured for PostgreSQL.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> configured for PostgreSQL operations.</returns>
     public static IResiliencePipeline ForPostgreSqlPipeline(TimeProvider? timeProvider = null)
         => StandardPipeline(PostgreSqlTransientErrorDetector.Default, "sql-postgresql-standard", timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for PostgreSQL.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> with circuit breaker configured for PostgreSQL operations.</returns>
     public static IResiliencePipeline ForPostgreSqlWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(PostgreSqlTransientErrorDetector.Default, "sql-postgresql-cb", timeProvider: timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> pre-configured for MySQL.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> configured for MySQL operations.</returns>
     public static IResiliencePipeline ForMySqlPipeline(TimeProvider? timeProvider = null)
         => StandardPipeline(MySqlTransientErrorDetector.Default, "sql-mysql-standard", timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for MySQL.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> with circuit breaker configured for MySQL operations.</returns>
     public static IResiliencePipeline ForMySqlWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(MySqlTransientErrorDetector.Default, "sql-mysql-cb", timeProvider: timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> pre-configured for SQLite.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> configured for SQLite operations.</returns>
     public static IResiliencePipeline ForSqlitePipeline(TimeProvider? timeProvider = null)
         => StandardPipeline(SqliteTransientErrorDetector.Default, "sql-sqlite-standard", timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for SQLite.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> with circuit breaker configured for SQLite operations.</returns>
     public static IResiliencePipeline ForSqliteWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(SqliteTransientErrorDetector.Default, "sql-sqlite-cb", timeProvider: timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> pre-configured for Oracle Database.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> configured for Oracle Database operations.</returns>
     public static IResiliencePipeline ForOraclePipeline(TimeProvider? timeProvider = null)
         => StandardPipeline(OracleTransientErrorDetector.Default, "sql-oracle-standard", timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for Oracle Database.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> with circuit breaker configured for Oracle Database operations.</returns>
     public static IResiliencePipeline ForOracleWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(OracleTransientErrorDetector.Default, "sql-oracle-cb", timeProvider: timeProvider);
 
@@ -437,13 +467,13 @@ public static class SqlResilienceDefaults
         TimeSpan? samplingDuration,
         int minimumThroughput,
         TimeSpan? breakDuration) => new()
-    {
-        FailureRatio = failureRatio,
-        SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
-        MinimumThroughput = minimumThroughput,
-        BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
-        ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-    };
+        {
+            FailureRatio = failureRatio,
+            SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
+            MinimumThroughput = minimumThroughput,
+            BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
+            ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
+        };
 
     internal static RetryStrategyOptions<T> CreateStandardRetryOptions<T>(ISqlTransientErrorDetector detector) => new()
     {
@@ -460,13 +490,13 @@ public static class SqlResilienceDefaults
         TimeSpan? samplingDuration,
         int minimumThroughput,
         TimeSpan? breakDuration) => new()
-    {
-        FailureRatio = failureRatio,
-        SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
-        MinimumThroughput = minimumThroughput,
-        BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
-        ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
-    };
+        {
+            FailureRatio = failureRatio,
+            SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
+            MinimumThroughput = minimumThroughput,
+            BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
+            ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
+        };
 }
 
 

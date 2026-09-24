@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 Modern .NET applications (using .NET 8, 9, 10) frequently use `DateOnly`, `TimeOnly`, and strongly-typed string Enums in their Domain and Application layers. Dapper does not register handlers for these types out of the box.
 

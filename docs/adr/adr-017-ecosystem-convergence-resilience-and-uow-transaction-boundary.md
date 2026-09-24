@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 
 The `EricksonLopez` ecosystem comprises multiple specialized frameworks that must interact cleanly without

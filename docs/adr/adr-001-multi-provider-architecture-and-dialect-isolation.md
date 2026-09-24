@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 `EricksonLopez.DapperExtensions` provides high-performance extensions for Dapper across multiple relational database engines (PostgreSQL, MySQL, MariaDB, Oracle, SQLite, and SQL Server).
 

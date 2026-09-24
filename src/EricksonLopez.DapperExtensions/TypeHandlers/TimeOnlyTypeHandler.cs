@@ -17,6 +17,7 @@ public sealed class TimeOnlyTypeHandler : SqlMapper.TypeHandler<TimeOnly>
     public static readonly TimeOnlyTypeHandler Default = new();
 
     /// <inheritdoc/>
+    /// <exception cref="ArgumentNullException"><paramref name="parameter"/> is <see langword="null"/>.</exception>
     public override void SetValue(IDbDataParameter parameter, TimeOnly value)
     {
         ArgumentNullException.ThrowIfNull(parameter);

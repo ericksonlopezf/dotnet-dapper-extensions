@@ -358,13 +358,12 @@ public class UnitOfWorkTests : IAsyncLifetime
         await uow2.RollbackAsync();
         mockTx.Received(1).Rollback();
 
-        // CreateSavepoint on non-DbTransaction returns NoOpSavepoint
+        // CreateSavepoint on non-DbTransaction throws NotSupportedException
         var uow3 = new UowImpl(mockTx);
-        var noOpSavepoint = await uow3.CreateSavepointAsync("NoOpSavepoint");
-        noOpSavepoint.Should().NotBeNull();
-        noOpSavepoint.Name.Should().Be("NoOpSavepoint");
-        await noOpSavepoint.RollbackAsync();
-        await noOpSavepoint.ReleaseAsync();
+        await FluentActions.Awaiting(() => uow3.CreateSavepointAsync("NoOpSavepoint"))
+            .Should()
+            .ThrowAsync<NotSupportedException>()
+            .WithMessage("The underlying transaction type '*' does not support savepoints because it does not inherit from System.Data.Common.DbTransaction.");
 
         // Dispose non-DbTransaction without commit triggers synchronous rollback and dispose
         var mockTxToRollback = Substitute.For<IDbTransaction, IDisposable>();
