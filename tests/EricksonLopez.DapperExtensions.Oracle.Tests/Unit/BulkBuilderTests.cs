@@ -42,6 +42,7 @@ public sealed class BulkBuilderTests
         sql.Should().Contain(":p0_2");
         sql.Should().Contain(":p0_3");
         sql.Should().Contain(":p1_0");
+        sql.Should().Contain(") INTO \"products\" (");
         sql.Should().EndWith("SELECT 1 FROM DUAL");
 
         parameters.Should().NotBeNull();
@@ -161,6 +162,7 @@ public sealed class BulkBuilderTests
 
         var intoCount = sql!.Split("INTO").Length - 1;
         intoCount.Should().Be(3);
+        sql.Should().Contain(") INTO \"items\" (");
     }
 
     [Fact]

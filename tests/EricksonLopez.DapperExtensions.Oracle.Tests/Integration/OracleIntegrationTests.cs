@@ -20,8 +20,7 @@ namespace EricksonLopez.DapperExtensions.Oracle.Tests.Integration;
 /// </summary>
 public sealed class OracleFixture : IAsyncLifetime
 {
-    private readonly OracleContainer _container = new OracleBuilder()
-        .WithImage("gvenzl/oracle-free:23-slim-faststart")
+    private readonly OracleContainer _container = new OracleBuilder("gvenzl/oracle-free:23-slim-faststart")
         .Build();
 
     public string ConnectionString => _container.GetConnectionString();

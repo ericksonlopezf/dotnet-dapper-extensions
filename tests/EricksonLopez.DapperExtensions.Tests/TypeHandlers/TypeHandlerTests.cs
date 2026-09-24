@@ -311,4 +311,18 @@ public sealed class TypeHandlerTests
 
         act.Should().NotThrow();
     }
+
+    public enum UniqueTypeHandlerAuditStatus
+    {
+        AuditPending = 1,
+        AuditPassed = 2
+    }
+
+    [Fact]
+    public void DapperTypeHandlerRegistrar_RegisterStringEnumHandler_ExplicitlyRegistersHandlerInSqlMapper()
+    {
+        SqlMapper.HasTypeHandler(typeof(UniqueTypeHandlerAuditStatus)).Should().BeFalse();
+        DapperTypeHandlerRegistrar.RegisterStringEnumHandler<UniqueTypeHandlerAuditStatus>();
+        SqlMapper.HasTypeHandler(typeof(UniqueTypeHandlerAuditStatus)).Should().BeTrue();
+    }
 }

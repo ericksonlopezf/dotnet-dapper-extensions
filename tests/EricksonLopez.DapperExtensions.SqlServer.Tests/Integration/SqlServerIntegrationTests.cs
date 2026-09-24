@@ -20,8 +20,7 @@ namespace EricksonLopez.DapperExtensions.SqlServer.Tests.Integration;
 /// Requires Docker Desktop or Docker Engine to be running.
 public sealed class MsSqlFixture : IAsyncLifetime
 {
-    private readonly MsSqlContainer _container = new MsSqlBuilder()
-        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+    private readonly MsSqlContainer _container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
         .Build();
 
     public string ConnectionString => _container.GetConnectionString();

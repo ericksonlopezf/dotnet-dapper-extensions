@@ -20,8 +20,7 @@ namespace EricksonLopez.DapperExtensions.MySql.Tests.Integration;
 /// </summary>
 public sealed class MySqlFixture : IAsyncLifetime
 {
-    private readonly MySqlContainer _container = new MySqlBuilder()
-        .WithImage("mysql:8.0")
+    private readonly MySqlContainer _container = new MySqlBuilder("mysql:8.0")
         .WithDatabase("testdb")
         .WithUsername("test")
         .WithPassword("test")

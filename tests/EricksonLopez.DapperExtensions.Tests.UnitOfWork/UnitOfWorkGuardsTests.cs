@@ -58,6 +58,14 @@ public sealed class UnitOfWorkGuardsTests
     }
 
     [Fact]
+    public async Task WithUnitOfWorkAsync_WhenBothConnectionAndActionNull_ThrowsForConnectionFirst()
+    {
+        IDbConnection connection = null!;
+        var act = async () => await connection.WithUnitOfWorkAsync((Func<IUnitOfWork, CancellationToken, Task>)null!);
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("connection");
+    }
+
+    [Fact]
     public async Task WithUnitOfWorkAsync_Generic_WhenConnectionNull_ThrowsArgumentNullException()
     {
         IDbConnection connection = null!;
@@ -71,5 +79,13 @@ public sealed class UnitOfWorkGuardsTests
         using var connection = new TestAdoConnection();
         var act = async () => await connection.WithUnitOfWorkAsync<int>((Func<IUnitOfWork, CancellationToken, Task<int>>)null!);
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("action");
+    }
+
+    [Fact]
+    public async Task WithUnitOfWorkAsync_Generic_WhenBothConnectionAndActionNull_ThrowsForConnectionFirst()
+    {
+        IDbConnection connection = null!;
+        var act = async () => await connection.WithUnitOfWorkAsync<int>((Func<IUnitOfWork, CancellationToken, Task<int>>)null!);
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("connection");
     }
 }
