@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 When combining transactional operations with resilience pipelines, there are two possible scoping strategies:
 
@@ -53,7 +56,12 @@ As of v1.2.0, `CancellationToken` correctly flows through the pipeline `ct` para
 
 As of the convergence milestone documented in ADR-017, the preferred pipeline API is `IResiliencePipeline`
 from `EricksonLopez.Resilience.Abstractions`, obtained via `SqlResilienceDefaults.For*Pipeline()` methods.
-The `Polly.ResiliencePipeline` overloads remain for backward compatibility but are deprecated. See ADR-017.
+The `Polly.ResiliencePipeline` overloads are retained as first-class compatibility APIs and are **NOT** marked `[Obsolete]`. See ADR-017 for the full decision.
+
+> **Revision (ADR-017):** An earlier draft of this document stated the Polly overloads "are deprecated".
+> ADR-017 supersedes that statement: the Polly overloads remain as permanent, non-deprecated compatibility
+> APIs. `IResiliencePipeline` is the **canonical preferred** API, but Polly overloads will not be removed
+> or marked `[Obsolete]` without a new ADR and a SemVer-major version bump.
 
 ## Consequences
 

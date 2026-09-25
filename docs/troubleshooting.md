@@ -26,7 +26,7 @@ await uow.ExecuteInSavepointWithRetryAsync(
 - **Cause:** High-concurrency conflict where two transactions hold resources needed by each other.
 - **Remedy:** Use `SqlServerTransientErrorDetector` with `SqlResilienceDefaults.ForSqlServer()` to automatically catch Error 1205 and retry the entire transaction with exponential jitter delay:
 ```csharp
-var pipeline = SqlResilienceDefaults.ForSqlServer();
+var pipeline = SqlResilienceDefaults.ForSqlServerPipeline();
 await pipeline.ExecuteAsync(async ct =>
 {
     await connection.WithUnitOfWorkAsync(async (uow, token) =>
@@ -49,7 +49,7 @@ await pipeline.ExecuteAsync(async ct =>
 ### Warning: `IL2026: Using member which has 'RequiresUnreferencedCodeAttribute'`
 - **Cause:** Direct dynamic deserialization via reflection inside custom type handlers or un-annotated entity models.
 - **Remedy:**
-  1. Add `[SqlEntity]` to your domain entity classes to enable compile-time `IDataReaderMapper<T>` code generation via `EricksonLopez.DapperExtensions.SourceGenerators`.
+  1. Add `[SqlEntity]` to your domain entity classes to enable compile-time `ReadFromDataReader()` and `GetMultiMapReaderFactory()` static method generation via `EricksonLopez.DapperExtensions.SourceGenerators`. These generated methods satisfy the `MultiMapBuilder<T>` AOT path. To use `IDataReaderMapper<T>` directly as an injectable interface, implement it manually (see Level 08 in the showcase).
   2. For JSON type handlers (`JsonTypeHandler<T>`, `JsonbTypeHandler<T>`), supply a `JsonSerializerContext` from `System.Text.Json.Serialization` to enable compile-time JSON serialization without reflection.
 
 ---

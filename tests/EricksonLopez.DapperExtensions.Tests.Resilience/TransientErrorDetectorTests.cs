@@ -4,33 +4,15 @@ using System.Data.Common;
 using AwesomeAssertions;
 using EricksonLopez.DapperExtensions.Resilience;
 using EricksonLopez.DapperExtensions.Testing.Common;
+using EricksonLopez.DapperExtensions.Testing.Common.DialectBases;
 using Xunit;
 
 namespace EricksonLopez.DapperExtensions.Resilience.UnitTests;
 
-public class SqlServerTransientErrorDetectorTests
+public class SqlServerTransientErrorDetectorTests : TransientErrorDetectorTestsBase<SqlServerTransientErrorDetector>
 {
-    private readonly SqlServerTransientErrorDetector _sut = SqlServerTransientErrorDetector.Default;
+    protected override SqlServerTransientErrorDetector Sut => SqlServerTransientErrorDetector.Default;
 
-    [Fact]
-    public void IsTransient_Null_ReturnsFalse()
-    {
-        _sut.IsTransient(null!).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsTransient_EmptyOrWhitespaceMessage_ReturnsFalse()
-    {
-        _sut.IsTransient(new Exception("")).Should().BeFalse();
-        _sut.IsTransient(new Exception("   ")).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsTransient_DbException_WithIsTransientTrue_ReturnsTrue()
-    {
-        var ex = new TestDbException("Generic DB error", isTransient: true);
-        _sut.IsTransient(ex).Should().BeTrue();
-    }
 
     [Theory]
     [InlineData(1205)]
@@ -51,7 +33,7 @@ public class SqlServerTransientErrorDetectorTests
     public void IsTransient_DbException_WithTransientErrorCode_ReturnsTrue(int errorCode)
     {
         var ex = new TestDbException("Error", errorCode: errorCode);
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Fact]
@@ -59,7 +41,7 @@ public class SqlServerTransientErrorDetectorTests
     {
         var ex = new TestDbException("Error", errorCode: 99999);
         ex.Data["Number"] = 1205;
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Fact]
@@ -67,7 +49,7 @@ public class SqlServerTransientErrorDetectorTests
     {
         var ex = new TestDbException("syntax error near SELECT", errorCode: 99999);
         ex.Data["Number"] = 88888;
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -75,7 +57,7 @@ public class SqlServerTransientErrorDetectorTests
     {
         var ex = new TestDbException("syntax error near SELECT", errorCode: 99999);
         ex.Data["Number"] = "not_an_int";
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -83,7 +65,7 @@ public class SqlServerTransientErrorDetectorTests
     {
         var inner = new TestDbException("Db error", errorCode: 1205);
         var outer = new Exception("Outer wrapper", inner);
-        _sut.IsTransient(outer).Should().BeTrue();
+        Sut.IsTransient(outer).Should().BeTrue();
     }
 
     [Theory]
@@ -98,7 +80,7 @@ public class SqlServerTransientErrorDetectorTests
     public void IsTransient_MessageContainsTransientKeyword_ReturnsTrue(string message)
     {
         var ex = new Exception(message);
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Theory]
@@ -108,7 +90,7 @@ public class SqlServerTransientErrorDetectorTests
     public void IsTransient_PermanentError_ReturnsFalse(string message)
     {
         var ex = new Exception(message);
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -118,29 +100,10 @@ public class SqlServerTransientErrorDetectorTests
     }
 }
 
-public class PostgreSqlTransientErrorDetectorTests
+public class PostgreSqlTransientErrorDetectorTests : TransientErrorDetectorTestsBase<PostgreSqlTransientErrorDetector>
 {
-    private readonly PostgreSqlTransientErrorDetector _sut = PostgreSqlTransientErrorDetector.Default;
+    protected override PostgreSqlTransientErrorDetector Sut => PostgreSqlTransientErrorDetector.Default;
 
-    [Fact]
-    public void IsTransient_Null_ReturnsFalse()
-    {
-        _sut.IsTransient(null!).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsTransient_EmptyOrWhitespaceMessage_ReturnsFalse()
-    {
-        _sut.IsTransient(new Exception("")).Should().BeFalse();
-        _sut.IsTransient(new Exception("   ")).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsTransient_DbException_WithIsTransientTrue_ReturnsTrue()
-    {
-        var ex = new TestDbException("Generic DB error", isTransient: true);
-        _sut.IsTransient(ex).Should().BeTrue();
-    }
 
     [Theory]
     [InlineData("40001")]
@@ -156,14 +119,14 @@ public class PostgreSqlTransientErrorDetectorTests
     public void IsTransient_DbException_WithSqlState_ReturnsTrue(string sqlState)
     {
         var ex = new TestDbException("Error", sqlState: sqlState);
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Fact]
     public void IsTransient_DbException_WithSqlState_NonTransient_ReturnsFalse()
     {
         var ex = new TestDbException("syntax error at or near SELECT", sqlState: "42601");
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -171,7 +134,7 @@ public class PostgreSqlTransientErrorDetectorTests
     {
         var ex = new TestDbException("Error", sqlState: "UNKNOWN");
         ex.Data["SqlState"] = "40001";
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Fact]
@@ -179,7 +142,7 @@ public class PostgreSqlTransientErrorDetectorTests
     {
         var ex = new TestDbException("syntax error at or near SELECT", sqlState: "UNKNOWN");
         ex.Data["SqlState"] = "42601";
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -187,14 +150,14 @@ public class PostgreSqlTransientErrorDetectorTests
     {
         var ex = new TestDbException("syntax error at or near SELECT", sqlState: "UNKNOWN");
         ex.Data["SqlState"] = 12345;
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
     public void IsTransient_DbException_WithNullSqlState_FallsThrough()
     {
         var ex = new TestDbException("syntax error at or near SELECT", sqlState: null!);
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -202,7 +165,7 @@ public class PostgreSqlTransientErrorDetectorTests
     {
         var inner = new TestDbException("Db error", sqlState: "40P01");
         var outer = new Exception("Outer wrapper", inner);
-        _sut.IsTransient(outer).Should().BeTrue();
+        Sut.IsTransient(outer).Should().BeTrue();
     }
 
     [Theory]
@@ -217,7 +180,7 @@ public class PostgreSqlTransientErrorDetectorTests
     public void IsTransient_MessageContainsTransientKeyword_ReturnsTrue(string message)
     {
         var ex = new Exception(message);
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Theory]
@@ -227,7 +190,7 @@ public class PostgreSqlTransientErrorDetectorTests
     public void IsTransient_PermanentError_ReturnsFalse(string message)
     {
         var ex = new Exception(message);
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -237,29 +200,10 @@ public class PostgreSqlTransientErrorDetectorTests
     }
 }
 
-public class MySqlTransientErrorDetectorTests
+public class MySqlTransientErrorDetectorTests : TransientErrorDetectorTestsBase<MySqlTransientErrorDetector>
 {
-    private readonly MySqlTransientErrorDetector _sut = MySqlTransientErrorDetector.Default;
+    protected override MySqlTransientErrorDetector Sut => MySqlTransientErrorDetector.Default;
 
-    [Fact]
-    public void IsTransient_Null_ReturnsFalse()
-    {
-        _sut.IsTransient(null!).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsTransient_EmptyOrWhitespaceMessage_ReturnsFalse()
-    {
-        _sut.IsTransient(new Exception("")).Should().BeFalse();
-        _sut.IsTransient(new Exception("   ")).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsTransient_DbException_WithIsTransientTrue_ReturnsTrue()
-    {
-        var ex = new TestDbException("Generic DB error", isTransient: true);
-        _sut.IsTransient(ex).Should().BeTrue();
-    }
 
     [Theory]
     [InlineData(1213)]
@@ -274,7 +218,7 @@ public class MySqlTransientErrorDetectorTests
     public void IsTransient_DbException_WithTransientErrorCode_ReturnsTrue(int errorCode)
     {
         var ex = new TestDbException("Error", errorCode: errorCode);
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Fact]
@@ -282,7 +226,7 @@ public class MySqlTransientErrorDetectorTests
     {
         var ex = new TestDbException("Error", errorCode: 99999);
         ex.Data["ServerErrorStatus"] = 1213;
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Fact]
@@ -290,7 +234,7 @@ public class MySqlTransientErrorDetectorTests
     {
         var ex = new TestDbException("Table 'users' doesn't exist", errorCode: 99999);
         ex.Data["ServerErrorStatus"] = 88888;
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -298,7 +242,7 @@ public class MySqlTransientErrorDetectorTests
     {
         var ex = new TestDbException("Table 'users' doesn't exist", errorCode: 99999);
         ex.Data["ServerErrorStatus"] = "not_an_int";
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -306,7 +250,7 @@ public class MySqlTransientErrorDetectorTests
     {
         var inner = new TestDbException("Db error", errorCode: 2006);
         var outer = new Exception("Outer wrapper", inner);
-        _sut.IsTransient(outer).Should().BeTrue();
+        Sut.IsTransient(outer).Should().BeTrue();
     }
 
     [Theory]
@@ -321,7 +265,7 @@ public class MySqlTransientErrorDetectorTests
     public void IsTransient_MessageContainsTransientKeyword_ReturnsTrue(string message)
     {
         var ex = new Exception(message);
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Theory]
@@ -331,7 +275,7 @@ public class MySqlTransientErrorDetectorTests
     public void IsTransient_PermanentError_ReturnsFalse(string message)
     {
         var ex = new Exception(message);
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -341,29 +285,10 @@ public class MySqlTransientErrorDetectorTests
     }
 }
 
-public class SqliteTransientErrorDetectorTests
+public class SqliteTransientErrorDetectorTests : TransientErrorDetectorTestsBase<SqliteTransientErrorDetector>
 {
-    private readonly SqliteTransientErrorDetector _sut = SqliteTransientErrorDetector.Default;
+    protected override SqliteTransientErrorDetector Sut => SqliteTransientErrorDetector.Default;
 
-    [Fact]
-    public void IsTransient_Null_ReturnsFalse()
-    {
-        _sut.IsTransient(null!).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsTransient_EmptyOrWhitespaceMessage_ReturnsFalse()
-    {
-        _sut.IsTransient(new Exception("")).Should().BeFalse();
-        _sut.IsTransient(new Exception("   ")).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsTransient_DbException_WithIsTransientTrue_ReturnsTrue()
-    {
-        var ex = new TestDbException("Generic DB error", isTransient: true);
-        _sut.IsTransient(ex).Should().BeTrue();
-    }
 
     [Theory]
     [InlineData(5)]
@@ -373,7 +298,7 @@ public class SqliteTransientErrorDetectorTests
     public void IsTransient_DbException_WithTransientErrorCode_ReturnsTrue(int errorCode)
     {
         var ex = new TestDbException("Error", errorCode: errorCode);
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Fact]
@@ -381,7 +306,7 @@ public class SqliteTransientErrorDetectorTests
     {
         var ex = new TestDbException("Error", errorCode: 99999);
         ex.Data["SqliteErrorCode"] = 5;
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Fact]
@@ -389,7 +314,7 @@ public class SqliteTransientErrorDetectorTests
     {
         var ex = new TestDbException("UNIQUE constraint failed: users.id", errorCode: 99999);
         ex.Data["SqliteErrorCode"] = 19;
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -397,7 +322,7 @@ public class SqliteTransientErrorDetectorTests
     {
         var ex = new TestDbException("UNIQUE constraint failed: users.id", errorCode: 99999);
         ex.Data["SqliteErrorCode"] = "not_an_int";
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -405,7 +330,7 @@ public class SqliteTransientErrorDetectorTests
     {
         var inner = new TestDbException("Db error", errorCode: 5);
         var outer = new Exception("Outer wrapper", inner);
-        _sut.IsTransient(outer).Should().BeTrue();
+        Sut.IsTransient(outer).Should().BeTrue();
     }
 
     [Theory]
@@ -418,7 +343,7 @@ public class SqliteTransientErrorDetectorTests
     public void IsTransient_MessageContainsTransientKeyword_ReturnsTrue(string message)
     {
         var ex = new Exception(message);
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Theory]
@@ -428,7 +353,7 @@ public class SqliteTransientErrorDetectorTests
     public void IsTransient_PermanentError_ReturnsFalse(string message)
     {
         var ex = new Exception(message);
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -438,29 +363,10 @@ public class SqliteTransientErrorDetectorTests
     }
 }
 
-public class OracleTransientErrorDetectorTests
+public class OracleTransientErrorDetectorTests : TransientErrorDetectorTestsBase<OracleTransientErrorDetector>
 {
-    private readonly OracleTransientErrorDetector _sut = OracleTransientErrorDetector.Default;
+    protected override OracleTransientErrorDetector Sut => OracleTransientErrorDetector.Default;
 
-    [Fact]
-    public void IsTransient_Null_ReturnsFalse()
-    {
-        _sut.IsTransient(null!).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsTransient_EmptyOrWhitespaceMessage_ReturnsFalse()
-    {
-        _sut.IsTransient(new Exception("")).Should().BeFalse();
-        _sut.IsTransient(new Exception("   ")).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsTransient_DbException_WithIsTransientTrue_ReturnsTrue()
-    {
-        var ex = new TestDbException("Generic DB error", isTransient: true);
-        _sut.IsTransient(ex).Should().BeTrue();
-    }
 
     [Theory]
     [InlineData(60)]
@@ -478,14 +384,14 @@ public class OracleTransientErrorDetectorTests
     public void IsTransient_DbException_WithTransientErrorCode_ReturnsTrue(int errorCode)
     {
         var ex = new TestDbException("Error", errorCode: errorCode);
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Fact]
     public void IsTransient_DbException_NonTransientErrorCode_ReturnsFalse()
     {
         var ex = new TestDbException("ORA-00942: table or view does not exist", errorCode: 942);
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]
@@ -493,7 +399,7 @@ public class OracleTransientErrorDetectorTests
     {
         var inner = new TestDbException("Db error", errorCode: 60);
         var outer = new Exception("Outer wrapper", inner);
-        _sut.IsTransient(outer).Should().BeTrue();
+        Sut.IsTransient(outer).Should().BeTrue();
     }
 
     [Theory]
@@ -527,7 +433,7 @@ public class OracleTransientErrorDetectorTests
     public void IsTransient_MessageContainsTransientKeyword_ReturnsTrue(string message)
     {
         var ex = new Exception(message);
-        _sut.IsTransient(ex).Should().BeTrue();
+        Sut.IsTransient(ex).Should().BeTrue();
     }
 
     [Theory]
@@ -536,7 +442,7 @@ public class OracleTransientErrorDetectorTests
     public void IsTransient_PermanentError_ReturnsFalse(string message)
     {
         var ex = new Exception(message);
-        _sut.IsTransient(ex).Should().BeFalse();
+        Sut.IsTransient(ex).Should().BeFalse();
     }
 
     [Fact]

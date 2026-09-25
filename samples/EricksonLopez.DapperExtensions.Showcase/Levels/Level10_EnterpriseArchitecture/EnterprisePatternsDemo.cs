@@ -76,20 +76,28 @@ public static class EnterprisePatternsDemo
         ConsoleHelper.PrintSuccess("Order and Outbox message committed atomically.");
 
         ConsoleHelper.PrintStep("2. Outbox Dispatcher Simulation");
-        const string pendingMessagesSql = "SELECT id, message_type AS MessageType, payload, status FROM outbox_messages WHERE status = 'Pending';";
-        var pendingMessages = await connection.QueryAsync(pendingMessagesSql).ConfigureAwait(false);
+        const string pendingMessagesSql = "SELECT id AS Id, message_type AS MessageType, payload AS Payload, status AS Status FROM outbox_messages WHERE status = 'Pending';";
+        var pendingMessages = await connection.QueryAsync<OutboxRecord>(pendingMessagesSql).ConfigureAwait(false);
 
         foreach (var msg in pendingMessages)
         {
-            ConsoleHelper.PrintInfo("Dispatching Message", $"{msg.id} [{msg.MessageType}]");
+            ConsoleHelper.PrintInfo("Dispatching Message", $"{msg.Id} [{msg.MessageType}]");
 
             await connection.ExecuteAsync(
                 "UPDATE outbox_messages SET status = 'Processed', processed_at = @ProcessedAt WHERE id = @Id;",
-                new { Id = msg.id, ProcessedAt = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture) }).ConfigureAwait(false);
+                new { Id = msg.Id, ProcessedAt = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture) }).ConfigureAwait(false);
         }
 
         ConsoleHelper.PrintSuccess("Dispatcher processed and marked all Outbox events.");
 
         ConsoleHelper.PrintSuccess("Level 10 completed successfully.");
+    }
+
+    private sealed class OutboxRecord
+    {
+        public string Id { get; set; } = string.Empty;
+        public string MessageType { get; set; } = string.Empty;
+        public string Payload { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
     }
 }

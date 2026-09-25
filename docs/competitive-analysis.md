@@ -39,4 +39,4 @@ Using PostgreSQL `UNNEST` enables single-round-trip batch streaming directly to 
 Streaming through `BulkDataTableBuilder` and `SqlBulkCopy` leverages TDS streaming binary bulk insert protocol directly into SQL Server tables, bypassing the T-SQL query parser and query compilation cache entirely for large ingestion volumes.
 
 ### Zero-Reflection Native AOT Hydration
-Using `[SqlEntity]` with Roslyn Incremental Generators produces compile-time `IDataReaderMapper<T>` code, completely eliminating runtime reflection, `DynamicMethod` / IL emit compilation, and unboxing overhead during object graph mapping.
+Using `[SqlEntity]` with Roslyn Incremental Generators produces compile-time static mapping methods (`ReadFromDataReader`, `GetMultiMapReaderFactory`) directly on the annotated partial class, completely eliminating runtime reflection, `DynamicMethod` / IL emit compilation, and unboxing overhead during object graph mapping. This is the `MultiMapBuilder<T>` AOT path; `IDataReaderMapper<T>` remains a separate, manually-implemented interface for custom injection scenarios.

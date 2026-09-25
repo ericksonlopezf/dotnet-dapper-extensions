@@ -2,8 +2,11 @@
   "stryker-config": {
     "project": "EricksonLopez.DapperExtensions.csproj",
     "test-projects": [
-      "EricksonLopez.DapperExtensions.Tests.csproj"
+      "tests/EricksonLopez.DapperExtensions.Tests/EricksonLopez.DapperExtensions.Tests.csproj",
+      "tests/EricksonLopez.DapperExtensions.Tests.Resilience/EricksonLopez.DapperExtensions.Tests.Resilience.csproj",
+      "tests/EricksonLopez.DapperExtensions.Tests.UnitOfWork/EricksonLopez.DapperExtensions.Tests.UnitOfWork.csproj"
     ],
+    "test-case-filter": "Category!=Integration",
     "mutate": [
       "**/*.cs",
       "!bin/**",
@@ -24,9 +27,8 @@
     ],
     "ignore-methods": [
       "ConfigureAwait",
-      "*ConfigureAwait",
-      "Dispose",
-      "DisposeAsync"
-    ]
+      "*ConfigureAwait"
+    ],
+    "concurrency": 2
   }
 }

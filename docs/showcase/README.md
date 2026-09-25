@@ -20,6 +20,7 @@ graph TD
     L7 --> L8[Level 08: Customization & Extensibility]
     L8 --> L9[Level 09: Observability & Health Checks]
     L9 --> L10[Level 10: Enterprise Architecture & Transactional Outbox]
+    L10 --> L11[Level 11: Comprehensive Public API Coverage]
 ```
 
 | Level | Guide | Focus Area | Executable Demo |
@@ -35,6 +36,7 @@ graph TD
 | **Level 08** | [**Customization**](level-08-customization.md) | Custom `ISqlTransientErrorDetector`, custom `MoneyTypeHandler`, custom AOT mappers. | [`CustomDetectorAndHandlerDemo.cs`](../../samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level08_Customization/CustomDetectorAndHandlerDemo.cs) |
 | **Level 09** | [**Observability & Health Checks**](level-09-observability-and-health.md) | OpenTelemetry distributed tracing (`ActivitySource`), metrics (`Meter`, `Histogram`, `Counters`), database probes (`DapperHealthCheck`). | [`OpenTelemetryAndHealthChecksDemo.cs`](../../samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level09_ObservabilityAndHealth/OpenTelemetryAndHealthChecksDemo.cs) |
 | **Level 10** | [**Enterprise Architecture**](level-10-enterprise-architecture.md) | Transactional Outbox pattern, domain repositories with `IUnitOfWork`, resilient sagas with savepoints. | [`EnterprisePatternsDemo.cs`](../../samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level10_EnterpriseArchitecture/EnterprisePatternsDemo.cs) |
+| **Level 11** | [**Comprehensive API Coverage**](level-11-comprehensive-api-coverage.md) | Living verification of 20+ exposed methods across all 14 resilience pipelines, 6 dialect registrars, streaming, and grouped multimap. | [`Level11_ComprehensiveApiCoverageDemo.cs`](../../samples/EricksonLopez.DapperExtensions.Showcase/Levels/Level11_ComprehensiveApiCoverage/Level11_ComprehensiveApiCoverageDemo.cs) |
 
 ---
 

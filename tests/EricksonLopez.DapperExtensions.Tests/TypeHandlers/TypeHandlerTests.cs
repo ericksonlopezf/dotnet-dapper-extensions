@@ -49,7 +49,7 @@ public sealed class TypeHandlerTests
     }
 
     [Fact]
-    public void DateOnlyTypeHandler_Properties_And_SetValue()
+    public void DateOnlyTypeHandler_SetValue_WhenParameterValid_SetsExpectedDbTypeAndValue()
     {
         DateOnlyTypeHandler.Default.Should().NotBeNull();
         var handler = DateOnlyTypeHandler.Default;
@@ -267,5 +267,62 @@ public sealed class TypeHandlerTests
 
         var delivery = await connection.QuerySingleAsync<DeliveryEntity>("SELECT Id, Status FROM Deliveries WHERE Id = 1;");
         delivery.Status.Should().Be(DeliveryStatus.Express);
+    }
+
+    public enum CustomAuditStatus
+    {
+        PendingReview,
+        Approved,
+        Rejected
+    }
+
+    private sealed class AuditEntity
+    {
+        public int Id { get; set; }
+        public CustomAuditStatus Status { get; set; }
+    }
+
+    [Fact]
+    public async Task DapperTypeHandlerRegistrar_RegisterStringEnumHandler_ActuallyRegistersHandler()
+    {
+        DapperTypeHandlerRegistrar.RegisterStringEnumHandler<CustomAuditStatus>();
+        SqlMapper.HasTypeHandler(typeof(CustomAuditStatus)).Should().BeTrue();
+
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+
+        await connection.ExecuteAsync("CREATE TABLE AuditLog (Id INT PRIMARY KEY, Status TEXT NOT NULL);");
+        await connection.ExecuteAsync("INSERT INTO AuditLog (Id, Status) VALUES (1, 'Approved');");
+
+        var audit = await connection.QuerySingleAsync<AuditEntity>("SELECT Id, Status FROM AuditLog WHERE Id = 1;");
+        audit.Status.Should().Be(CustomAuditStatus.Approved);
+    }
+
+    [Fact]
+    public void DapperTypeHandlerRegistrar_ConcurrentRegistration_IsThreadSafe()
+    {
+        var act = () => Parallel.For(0, 50, _ =>
+        {
+            DapperTypeHandlerRegistrar.RegisterStandardHandlers();
+            DapperTypeHandlerRegistrar.RegisterStringEnumHandler<OrderStatus>();
+            DapperTypeHandlerRegistrar.RegisterStringEnumHandler<PaymentMode>();
+            DapperTypeHandlerRegistrar.RegisterStringEnumHandler<CustomAuditStatus>();
+        });
+
+        act.Should().NotThrow();
+    }
+
+    public enum UniqueTypeHandlerAuditStatus
+    {
+        AuditPending = 1,
+        AuditPassed = 2
+    }
+
+    [Fact]
+    public void DapperTypeHandlerRegistrar_RegisterStringEnumHandler_ExplicitlyRegistersHandlerInSqlMapper()
+    {
+        SqlMapper.HasTypeHandler(typeof(UniqueTypeHandlerAuditStatus)).Should().BeFalse();
+        DapperTypeHandlerRegistrar.RegisterStringEnumHandler<UniqueTypeHandlerAuditStatus>();
+        SqlMapper.HasTypeHandler(typeof(UniqueTypeHandlerAuditStatus)).Should().BeTrue();
     }
 }

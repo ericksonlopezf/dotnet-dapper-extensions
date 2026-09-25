@@ -1,4 +1,6 @@
+<!-- Copyright © Erickson Lopez. MIT License. -->
 <Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../')))" />
 
   <PropertyGroup>
     <TargetFrameworks Condition="'$(TargetFramework)' == ''">net8.0;net9.0;net10.0</TargetFrameworks>
@@ -39,9 +41,8 @@
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
 
-    <!-- SourceLink -->
-    <PublishRepositoryUrl Condition="'$(CI)' == 'true'">true</PublishRepositoryUrl>
-    <PublishRepositoryUrl Condition="'$(CI)' != 'true'">false</PublishRepositoryUrl>
+    <!-- SourceLink and Symbol Packaging -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -51,7 +52,7 @@
     <NuGetAuditMode>all</NuGetAuditMode>
     <NuGetAuditLevel>low</NuGetAuditLevel>
 
-    <NoWarn>$(NoWarn);NU1901;NU1902;NU1903;NU1904;CA1510;CA1000;CA1716;CS8002;CA1859;NU5104</NoWarn>
+    <NoWarn>$(NoWarn);IL3050;NU1901;NU1902;NU1903;NU1904;CA1510;CA1000;CA1716;CS8002;CA1859;NU5104</NoWarn>
     <!-- Validation -->
     <EnablePackageValidation Condition="'$(IsPackable)' == 'true'">true</EnablePackageValidation>
     <!-- ADR-006: Trim analyzer enabled to verify Native AOT compliance claims -->
@@ -73,9 +74,3 @@
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)README.md')" />
   </ItemGroup>
 </Project>
-
-
-
-
-
-

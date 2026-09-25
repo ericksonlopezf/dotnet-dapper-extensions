@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using AwesomeAssertions;
+using Dapper;
 using EricksonLopez.DapperExtensions.SqlServer.TypeHandlers;
 using NSubstitute;
 using Xunit;
@@ -66,10 +67,18 @@ public sealed class JsonTypeHandlerTests
         result.Level.Should().Be(3);
     }
 
+    private sealed record RegisteredItem(string Role, int Level);
+
     [Fact]
     public void RegisterJsonHandler_RegistersHandlerInSqlMapperWithoutException()
     {
-        var act = () => SqlServerTypeHandlerRegistrar.RegisterJsonHandler<Metadata>();
-        act.Should().NotThrow();
+        SqlServerTypeHandlerRegistrar.RegisterJsonHandler<RegisteredItem>();
+        using var connection = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=:memory:");
+        connection.Open();
+        var item = new RegisteredItem("Admin", 5);
+        var parameters = new DynamicParameters();
+        parameters.Add("item", item);
+        var json = connection.ExecuteScalar<string>("SELECT @item", parameters);
+        json.Should().Contain("\"role\":\"Admin\"");
     }
 }

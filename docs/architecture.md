@@ -118,7 +118,8 @@ graph TD
     Sqlite --> Core
 
     %% SourceGenerators is a Roslyn analyzer; consuming apps reference it alongside Core
-    %% to enable [SqlEntity] compile-time IDataReaderMapper<T> generation (ADR-013)
+    %% to enable [SqlEntity] compile-time ReadFromDataReader/GetMultiMapReaderFactory generation (ADR-013)
+    %% Note: generates static methods on partial class, NOT IDataReaderMapper<T> implementations
     SG -.->|"consumes [SqlEntity] marker<br/>(compile-time only)"| Core
     
     Showcase["EricksonLopez.DapperExtensions.Showcase<br/>(Executable Samples)"]
@@ -168,7 +169,7 @@ graph LR
 | `EricksonLopez.Resilience.Polly` | `dotnet-resilience` | Polly v8 pipeline adapter implementation |
 | `EricksonLopez.SqlBuilder.Abstractions` | `dotnet-sql-builder` | SQL building abstraction contracts used by the Core library |
 
-> **Local Development Setup**: These sibling repositories must be cloned to the same parent directory as `dotnet-dapper-extensions`. See [CONTRIBUTING.md](../CONTRIBUTING.md) for workspace layout requirements.
+> **Standalone Build**: Upstream ecosystem packages are resolved from NuGet feeds through Central Package Management (`Directory.Packages.props`). The repository builds standalone with zero local directory dependencies.
 
 ---
 
@@ -181,3 +182,94 @@ The architecture enforces core design invariants formalized through Architecture
 3. **Savepoint-Aware Retry ([ADR-014](adr/adr-014-savepoint-aware-resilience-retry.md))**: Partial failures within active transactions use named savepoints (`ISavepoint`) with dedicated rollback semantics to prevent transaction state poisoning.
 4. **Zero Reflection in Hot Paths ([ADR-006](adr/adr-006-native-aot-and-trimming-compliance-enforcement.md), [ADR-013](adr/adr-013-source-generator-for-aot-datareader-mapper.md))**: Full Native AOT compatibility verified via trim analyzers (`EnableTrimAnalyzer=true`) and Roslyn Incremental Generators (`[SqlEntity]`).
 5. **No Full ORM / Change Tracker Invariant ([REJECT-011](adr/reject-011-custom-expression-tree-interpreters-in-dapper.md))**: The library strictly avoids in-memory change tracking, dynamic LINQ trees, and artificial abstraction layers over raw SQL.
+6. **Ecosystem Resilience Convergence ([ADR-017](adr/adr-017-ecosystem-convergence-resilience-and-uow-transaction-boundary.md))**: Standardized on `IResiliencePipeline` from `EricksonLopez.Resilience` as the canonical authority, while retaining Polly overloads for backward compatibility without `[Obsolete]`.
+7. **Ecosystem Demarcation ([ADR-018](adr/adr-018-architectural-boundary-and-coexistence-with-sql-builder.md))**: Formalized the "ONE CAPABILITY → ONE OWNER" demarcation between `DapperExtensions` (data access runtime, UoW, UNNEST, streaming) and `SqlBuilder` (query AST compiler).
+8. **Async Streaming ([ADR-019](adr/adr-019-async-streaming-dapper-streaming-extensions.md))**: Unbuffered `IAsyncEnumerable<T>` streaming with an $O(1)$ memory consumption profile for high-volume record streams.
+
+---
+
+## 6. Resilience Pipeline State Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: Pipeline created (SqlResilienceDefaults.ForXxx())
+
+    Idle --> Executing: pipeline.ExecuteAsync(action, ct)
+
+    Executing --> Success: Action completes without exception
+    Success --> [*]: Return result
+
+    Executing --> TransientError: ISqlTransientErrorDetector.IsTransient() = true
+    TransientError --> RetryWait: Exponential backoff delay
+    RetryWait --> Executing: Retry attempt (up to MaxRetries)
+    RetryWait --> ExhaustedRetries: MaxRetries exceeded
+
+    Executing --> PermanentError: IsTransient() = false
+    PermanentError --> [*]: Exception propagates to caller
+
+    ExhaustedRetries --> [*]: Exception propagates to caller
+
+    Executing --> CircuitOpen: CircuitBreaker threshold exceeded (WithCircuitBreaker variants)
+    CircuitOpen --> HalfOpen: BreakDuration elapsed
+    HalfOpen --> Executing: Probe attempt
+    HalfOpen --> CircuitOpen: Probe fails
+```
+
+---
+
+## 7. Error Handling Flow Diagram
+
+```mermaid
+flowchart TD
+    Start([SQL Operation Attempted]) --> Wrap{Wrapped in<br/>ResiliencePipeline?}
+
+    Wrap -- Yes --> Execute[Execute Action]
+    Wrap -- No --> DirectExec[Direct ADO.NET Execute]
+    DirectExec --> DirectFail[Exception propagates immediately]
+
+    Execute --> Result{Success?}
+    Result -- Yes --> Done([Return Result])
+
+    Result -- No --> Detect{ISqlTransientErrorDetector<br/>.IsTransient?}
+    Detect --> No → Permanent --> Fail([Propagate Exception])
+
+    Detect --> Yes → Transient --> InTx{Inside open<br/>IUnitOfWork?}
+    InTx -- No --> Retry[Retry with backoff]
+    Retry --> Execute
+
+    InTx -- Yes → DANGER --> Savepoint{Using<br/>ISavepoint?}
+    Savepoint -- Yes --> RollbackSP[savepoint.RollbackAsync]
+    RollbackSP --> RetryOp[Retry sub-operation in savepoint]
+    RetryOp --> Execute
+
+    Savepoint -- No → POISONED --> PoisonedTx[Transaction state POISONED<br/>Retry would fail with SQLSTATE 25P02]
+    PoisonedTx --> ForceRollback[Force uow.RollbackAsync]
+    ForceRollback --> Fail
+```
+
+---
+
+## 8. Processing Pipeline Diagram
+
+```mermaid
+flowchart LR
+    Input[("Application Request")] --> DI[("DI Container<br/>IDbConnection · IResiliencePipeline<br/>ISqlTransientErrorDetector")]
+
+    DI --> Pipeline["Polly v8 / IResiliencePipeline<br/>(SqlResilienceDefaults)"]
+    Pipeline --> UoW["IUnitOfWork Scope<br/>(BeginUnitOfWorkAsync)"]
+
+    UoW --> SQLExec["SQL Execution Layer<br/>Dapper / ADO.NET"]
+
+    SQLExec --> OTel["OpenTelemetry Instrumentation<br/>ActivitySource · Meter"]
+    SQLExec --> DB[("Relational Database")]
+
+    DB --> Result["Result Set / Rows Affected"]
+    Result --> MultiMap["Optional MultiMapBuilder&lt;T&gt;<br/>(1:N Aggregation)"]
+    Result --> Stream["Optional StreamAsync&lt;T&gt;<br/>(Unbuffered IAsyncEnumerable)"]
+
+    MultiMap --> Output[("Domain Objects / Aggregates")]
+    Stream --> Output
+    Result --> Output
+
+    OTel --> Telemetry[("OTLP Exporter / Prometheus<br/>Distributed Traces · Latency Histograms")]
+```

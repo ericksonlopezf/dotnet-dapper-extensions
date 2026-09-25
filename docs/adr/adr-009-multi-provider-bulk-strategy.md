@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-08-19
+
 ## Context
 `EricksonLopez.DapperExtensions` targets 6 relational database engines: PostgreSQL, SQL Server, MySQL, MariaDB, Oracle, and SQLite. Each engine exposes fundamentally different mechanisms for performing high-throughput batch data operations. A single "universal" strategy cannot simultaneously optimize for performance, driver compatibility, parameter limits, and AOT safety across all providers.
 

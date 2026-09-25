@@ -17,7 +17,7 @@ The comprehensive CI/CD pipeline documentation — including all 10 GitHub Actio
 | `publish.yml` | `v*.*.*` tag / dispatch | Pack + Sigstore attest + NuGet push |
 | `release-please.yml` | push → `main` | Conventional Commits versioning + release PRs |
 | `mutation-testing.yml` | Mon 04:00 UTC / dispatch | 11-package Stryker matrix + consolidated gate |
-| `benchmark-regression-gate.yml` | PR touching src/ or benchmarks/ | Performance regression check (10% threshold) |
+| `benchmark-regression-gate.yml` | PR touching src/ or benchmarks/ | Performance regression check (5% threshold) |
 | `benchmarks.yml` | `workflow_call` / dispatch | On-demand BenchmarkDotNet suite |
 | `weekly-benchmarks.yml` | Sun 02:00 UTC / dispatch | Deep cross-TFM benchmark + baseline commit |
 | `repo-compliance.yml` | push/PR → `main` / dispatch | Architecture, licensing, compliance verification |
