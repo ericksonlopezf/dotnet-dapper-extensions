@@ -12,7 +12,7 @@ A technical reference for all 11 published packages within the **EricksonLopez.D
 | **Dependency Injection** | `EricksonLopez.DapperExtensions.DependencyInjection` | `net8.0;net9.0;net10.0` | `IServiceCollection` extension methods (`AddDapperExtensions`) for ASP.NET Core and .NET Generic Host. |
 | **Health Checks** | `EricksonLopez.DapperExtensions.HealthChecks` | `net8.0;net9.0;net10.0` | Database connectivity health check probes (`DapperHealthCheck`) for relational database engines. |
 | **OpenTelemetry** | `EricksonLopez.DapperExtensions.OpenTelemetry` | `net8.0;net9.0;net10.0` | Distributed tracing (`ActivitySource`) and execution latency metrics (`Meter`) for Dapper operations. |
-| **Source Generators** | `EricksonLopez.DapperExtensions.SourceGenerators` | `netstandard2.0` | Roslyn Incremental Generator for compile-time generation of zero-reflection `IDataReaderMapper<T>` implementations. |
+| **Source Generators** | `EricksonLopez.DapperExtensions.SourceGenerators` | `netstandard2.0` | Roslyn Incremental Generator for compile-time generation of zero-reflection `ReadFromDataReader()` and `GetMultiMapReaderFactory()` static methods on `[SqlEntity]`-annotated partial classes, enabling Native AOT multi-mapping without reflection. |
 | **PostgreSQL** | `EricksonLopez.DapperExtensions.PostgreSql` | `net8.0;net9.0;net10.0` | High-performance PostgreSQL extensions: UNNEST bulk insert/upsert/delete/update, JSONB handler, keyset/offset pagination. |
 | **SQL Server** | `EricksonLopez.DapperExtensions.SqlServer` | `net8.0;net9.0;net10.0` | High-performance SQL Server extensions: `SqlBulkCopy` integration, JSON type handler, `OFFSET...FETCH` & keyset pagination. |
 | **MySQL** | `EricksonLopez.DapperExtensions.MySql` | `net8.0;net9.0;net10.0` | High-performance MySQL extensions: multi-row batch insert/upsert/delete/update, JSON handler, keyset & offset pagination. |
@@ -59,24 +59,24 @@ Configured centrally in `Directory.Packages.props`:
 
 | Dependency | Pinned Version | Consumed By |
 |---|:---:|---|
-| `Dapper` | `2.1.79` | Core, All Dialect Providers |
-| `Microsoft.Extensions.Resilience` | `10.9.0` | Core |
+| `Dapper` | `2.1.35` | Core, All Dialect Providers |
+| `Microsoft.Extensions.Resilience` | `9.2.0` | Core |
 | `Microsoft.Extensions.DependencyInjection.Abstractions` | `10.0.11` | DI, OpenTelemetry, HealthChecks |
-| `Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions` | `10.0.11` | HealthChecks |
+| `Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions` | `10.0.0` | HealthChecks |
 | `OpenTelemetry.Api` | `1.18.0` | OpenTelemetry |
-| `Npgsql` | `10.0.3` | PostgreSql |
-| `Microsoft.Data.SqlClient` | `7.0.2` | SqlServer |
-| `MySqlConnector` | `2.6.2` | MySql, MariaDb |
-| `Oracle.ManagedDataAccess.Core` | `23.26.300` | Oracle |
-| `Microsoft.Data.Sqlite` | `10.0.11` | Sqlite |
-| `Microsoft.CodeAnalysis.CSharp` | `4.13.0` | SourceGenerators |
-| `Microsoft.CodeAnalysis.Analyzers` | `3.11.0` | SourceGenerators |
+| `Npgsql` | `8.0.6` | PostgreSql |
+| `Microsoft.Data.SqlClient` | `5.2.2` | SqlServer |
+| `MySqlConnector` | `2.4.0` | MySql, MariaDb |
+| `Oracle.ManagedDataAccess.Core` | `23.7.0` | Oracle |
+| `Microsoft.Data.Sqlite` | `9.0.2` | Sqlite |
+| `Microsoft.CodeAnalysis.CSharp` | `4.8.0` | SourceGenerators |
+| `Microsoft.CodeAnalysis.Analyzers` | `3.3.4` | SourceGenerators |
 | `BenchmarkDotNet` | `0.15.8` | Benchmarks |
 | `xunit` | `2.9.3` | Test Suites |
-| `Testcontainers.*` | `4.14.0` | Integration Test Suites |
-| `AwesomeAssertions` | `9.6.0` | Test Suites |
-| `NSubstitute` | `6.2.0` | Unit Test Suites |
-| `coverlet.collector` | `10.0.1` | Test Suites |
+| `Testcontainers.*` | `3.8.0` | Integration Test Suites |
+| `AwesomeAssertions` | `9.5.0` | Test Suites |
+| `NSubstitute` | `6.0.0` | Unit Test Suites |
+| `coverlet.collector` | `6.0.4` | Test Suites |
 
 ---
 
@@ -110,7 +110,7 @@ The following packages are produced by upstream sibling repositories and consume
 | `EricksonLopez.DapperExtensions.Oracle` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* |
 | `EricksonLopez.DapperExtensions.Sqlite` | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Compatible\* |
 
-\* **Native AOT compatibility is conditional.** Full AOT safety requires decorating entities with `[SqlEntity]` and referencing `EricksonLopez.DapperExtensions.SourceGenerators`. Without source-generated `IDataReaderMapper<T>` parsers, `MultiMapBuilder<TReturn>` falls back to Dapper's reflection-based mapping, which is **not** Native AOT compatible. See ADR-006 for the full analysis.
+\* **Native AOT compatibility is conditional.** Full AOT safety requires decorating entities with `[SqlEntity]` and referencing `EricksonLopez.DapperExtensions.SourceGenerators`. Without source-generated static mapping methods (`ReadFromDataReader`/`GetMultiMapReaderFactory`), `MultiMapBuilder<TReturn>` falls back to Dapper's reflection-based mapping, which is **not** Native AOT compatible. `DapperStreamingExtensions.StreamAsync<T>` also uses Dapper's reflection-based `GetRowParser<T>()` and is not fully AOT-safe. See ADR-006 for the full analysis.
 
 ---
 
@@ -133,7 +133,7 @@ Included benchmark suites:
 
 ## 7. Official Executable Showcase Reference
 
-The project `samples/EricksonLopez.DapperExtensions.Showcase` demonstrates progressive implementations across 11 levels:
+The project `samples/EricksonLopez.DapperExtensions.Showcase` demonstrates progressive implementations across 12 levels (Level 00 to Level 11):
 
 | Level | Topic | Description |
 |---|---|---|
@@ -148,6 +148,7 @@ The project `samples/EricksonLopez.DapperExtensions.Showcase` demonstrates progr
 | **Level 08** | Customization | Implementing custom `ISqlTransientErrorDetector` and specialized type handlers. |
 | **Level 09** | Observability & Health | OpenTelemetry tracing/metrics and ASP.NET Core database health probes. |
 | **Level 10** | Enterprise Architecture | Transactional Outbox pattern and distributed Saga compensation. |
+| **Level 11** | Comprehensive API Coverage | Living verification of 20+ methods across all 14 resilience pipelines, 6 dialect registrars, streaming, and grouped multimap. |
 
 ### How to Run the Showcase:
 ```bash

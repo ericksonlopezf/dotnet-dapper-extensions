@@ -6,7 +6,7 @@
     <RootNamespace>EricksonLopez.DapperExtensions.DependencyInjection</RootNamespace>
     <PackageId>EricksonLopez.DapperExtensions.DependencyInjection</PackageId>
     <Description>Dependency Injection extensions for EricksonLopez.DapperExtensions. Provides seamless registration for Dapper type handlers, transient error detectors, and resilience configurations in ASP.NET Core and .NET Generic Host.</Description>
-    <PackageTags>$(CommonPackageTags);dependency-injection;aspnet-core;service-collection;host</PackageTags>
+    <PackageTags>$(CommonPackageTags);dependency-injection;service-collection;aspnet-core;generic-host</PackageTags>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 

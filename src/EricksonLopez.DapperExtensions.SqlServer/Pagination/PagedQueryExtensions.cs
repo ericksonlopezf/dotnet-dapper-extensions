@@ -116,6 +116,8 @@ public static class PagedQueryExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentException.ThrowIfNullOrWhiteSpace(sql);
         ArgumentException.ThrowIfNullOrWhiteSpace(cursorColumn);
+        if (!System.Text.RegularExpressions.Regex.IsMatch(cursorColumn, @"^[a-zA-Z0-9_\[\]\""\.]+$"))
+            throw new ArgumentException("Invalid cursor column name.", nameof(cursorColumn));
         ArgumentNullException.ThrowIfNull(cursorSelector);
 
         var dynamicParams = new DynamicParameters();

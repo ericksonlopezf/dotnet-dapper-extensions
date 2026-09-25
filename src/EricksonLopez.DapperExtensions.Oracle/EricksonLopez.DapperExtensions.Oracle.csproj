@@ -6,7 +6,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>EricksonLopez.DapperExtensions.Oracle</PackageId>
     <Description>High-performance Dapper extensions for Oracle Database. Bulk insert via INSERT ALL, paginated queries returning PagedList&lt;T&gt; with OFFSET FETCH NEXT, transaction helpers, and JSON type handler. Designed for enterprise .NET applications using Clean Architecture.</Description>
-    <PackageTags>$(CommonPackageTags);oracle;oracle-database;odp-net;bulk-insert;pagination;json</PackageTags>
+    <PackageTags>$(CommonPackageTags);oracle;odp-net;bulk-insert;upsert;pagination;json</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

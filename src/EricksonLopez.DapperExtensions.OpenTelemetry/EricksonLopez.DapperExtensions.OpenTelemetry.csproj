@@ -6,7 +6,7 @@
     <RootNamespace>EricksonLopez.DapperExtensions.OpenTelemetry</RootNamespace>
     <PackageId>EricksonLopez.DapperExtensions.OpenTelemetry</PackageId>
     <Description>OpenTelemetry tracing, metrics, and activity instrumentation for EricksonLopez.DapperExtensions.</Description>
-    <PackageTags>$(CommonPackageTags);opentelemetry;tracing;metrics;observability;telemetry</PackageTags>
+    <PackageTags>$(CommonPackageTags);opentelemetry;tracing;metrics;observability</PackageTags>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 

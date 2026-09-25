@@ -19,8 +19,10 @@ Welcome to the official documentation and reference center for **EricksonLopez.D
 | 🔄 [**Migration Guide**](migration-guide.md) | Steps for migrating from Vanilla Dapper or Entity Framework Core. | Migration Teams |
 | ❓ [**Frequently Asked Questions (FAQ)**](faq.md) | Technical FAQs, tradeoffs, and architectural justifications. | General Reference |
 | 🛡️ [**CI/CD, Build & Quality Gates**](ci-cd-and-quality.md) | GitHub Actions workflows, Stryker mutation testing, Codecov, and SonarCloud. | DevOps & Maintainers |
+| 🧪 [**Testing Roadmap & Quality Strategy**](testing-roadmap.md) | Quality thresholds, mutation testing matrix, and QA work unit tracking. | QA Engineers & Maintainers |
+| 📊 [**Competitive Analysis & Benchmarks**](competitive-analysis.md) | Comparative capability matrix vs Dapper, RepoDb, and EF Core. | Technical Evaluators & Architects |
 | 📦 [**NuGet Packages & Ecosystem**](nuget-packages.md) | Package inventory, Central Package Management (CPM), and compatibility matrices. | Package Consumers |
-| 🎯 [**Showcase Project**](../samples/EricksonLopez.DapperExtensions.Showcase) | Executable reference project demonstrating progressive levels (Level 00 to Level 10). | Hands-on Learners |
+| 🎯 [**Showcase Project**](../samples/EricksonLopez.DapperExtensions.Showcase) | Executable reference project demonstrating progressive levels (Level 00 to Level 11). | Hands-on Learners |
 
 ---
 

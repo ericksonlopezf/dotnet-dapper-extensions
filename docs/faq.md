@@ -36,7 +36,7 @@ Technical answers and architectural rationale for commonly asked questions about
 ## 3. Native AOT & Tooling
 
 ### Q: How does Native AOT support work?
-**A:** The library enables the .NET Trim Analyzer (`EnableTrimAnalyzer=true`) across all assemblies. In addition, `EricksonLopez.DapperExtensions.SourceGenerators` analyzes classes decorated with `[SqlEntity]` and generates compile-time `IDataReaderMapper<T>` code, completely bypassing reflection.
+**A:** The library enables the .NET Trim Analyzer (`EnableTrimAnalyzer=true`) across all assemblies. In addition, `EricksonLopez.DapperExtensions.SourceGenerators` analyzes classes decorated with `[SqlEntity]` and generates compile-time `ReadFromDataReader()` and `GetMultiMapReaderFactory()` static methods directly on the annotated partial class, completely bypassing reflection. These generated methods satisfy the `MultiMapBuilder<T>` AOT mapping path. `IDataReaderMapper<T>` is a separate, manually-implemented interface for custom injection scenarios.
 
 ---
 

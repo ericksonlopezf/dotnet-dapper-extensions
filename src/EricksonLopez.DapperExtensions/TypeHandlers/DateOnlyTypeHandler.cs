@@ -17,6 +17,7 @@ public sealed class DateOnlyTypeHandler : SqlMapper.TypeHandler<DateOnly>
     public static readonly DateOnlyTypeHandler Default = new();
 
     /// <inheritdoc/>
+    /// <exception cref="ArgumentNullException"><paramref name="parameter"/> is <see langword="null"/>.</exception>
     public override void SetValue(IDbDataParameter parameter, DateOnly value)
     {
         ArgumentNullException.ThrowIfNull(parameter);

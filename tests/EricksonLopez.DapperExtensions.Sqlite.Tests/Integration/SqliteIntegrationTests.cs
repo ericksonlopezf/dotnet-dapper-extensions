@@ -7,6 +7,7 @@ using AwesomeAssertions;
 using Dapper;
 using EricksonLopez.DapperExtensions.Sqlite.Bulk;
 using EricksonLopez.DapperExtensions.Sqlite.Transactions;
+using EricksonLopez.DapperExtensions.Testing.Common;
 using Microsoft.Data.Sqlite;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace EricksonLopez.DapperExtensions.Sqlite.Tests.Integration;
 /// <summary>
 /// Integration tests using an in-memory SQLite database (no Docker required).
 /// </summary>
-[Trait("Category", "Integration")]
+[Trait("Category", "SqliteIntegration")]
 public sealed class SqliteIntegrationTests : IAsyncLifetime
 {
     private SqliteConnection _connection = null!;
@@ -24,15 +25,7 @@ public sealed class SqliteIntegrationTests : IAsyncLifetime
     {
         _connection = new SqliteConnection("Data Source=:memory:");
         await _connection.OpenAsync();
-
-        await _connection.ExecuteAsync("""
-            CREATE TABLE products (
-                id      INTEGER NOT NULL PRIMARY KEY,
-                name    TEXT    NOT NULL,
-                price   REAL    NOT NULL,
-                active  INTEGER NOT NULL DEFAULT 1
-            )
-            """);
+        await _connection.ExecuteAsync(BulkTestProduct.Ddl.SqliteProductsTable);
     }
 
     public async Task DisposeAsync()

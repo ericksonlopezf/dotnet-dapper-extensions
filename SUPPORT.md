@@ -28,7 +28,7 @@ Before opening an issue, please check the comprehensive documentation:
 - 🛠️ [**Troubleshooting Guide**](docs/troubleshooting.md) — Diagnostics for SQLSTATE codes and connection timeouts.
 - 🔄 [**Migration Guide**](docs/migration-guide.md) — Migrating from Vanilla Dapper or Entity Framework Core.
 - ❓ [**Frequently Asked Questions (FAQ)**](docs/faq.md) — Technical FAQs and justifications.
-- 🎯 [**Showcase Project**](samples/EricksonLopez.DapperExtensions.Showcase) — Executable demonstration with 11 progressive levels (Level 00 to Level 10).
+- 🎯 [**Showcase Project**](samples/EricksonLopez.DapperExtensions.Showcase) — Executable demonstration with 12 progressive levels (Level 00 to Level 11).
 
 ---
 

@@ -6,7 +6,7 @@
     <RootNamespace>EricksonLopez.DapperExtensions</RootNamespace>
     <PackageId>EricksonLopez.DapperExtensions</PackageId>
     <Description>High-performance, provider-agnostic Dapper extensions. Provides Unit of Work and Savepoints, fluent MultiMapBuilder supporting 8+ entities, and resilience pipeline integration via EricksonLopez.Resilience.Abstractions. Polly v8 pipelines (ResiliencePipeline) are supported via the IResiliencePipeline adapter.</Description>
-    <PackageTags>$(CommonPackageTags);unit-of-work;savepoints;multimap;mapping;resilience;type-handlers</PackageTags>
+    <PackageTags>$(CommonPackageTags);unit-of-work;savepoints;multimap;mapping;resilience;polly;type-handlers</PackageTags>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
@@ -25,6 +25,9 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="EricksonLopez.DapperExtensions.Tests" />
+    <InternalsVisibleTo Include="EricksonLopez.DapperExtensions.Tests.Resilience" />
+    <InternalsVisibleTo Include="EricksonLopez.DapperExtensions.Tests.UnitOfWork" />
+    <InternalsVisibleTo Include="EricksonLopez.DapperExtensions.SqlServer.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 

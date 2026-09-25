@@ -97,6 +97,17 @@ public sealed class JsonbTypeHandlerTests
     }
 
     [Fact]
+    public void Parse_WithMalformedJson_ThrowsJsonException()
+    {
+        var handler = new JsonbTypeHandler<TestData>();
+        var malformedJson = "{invalid-json-payload";
+
+        var act = () => handler.Parse(malformedJson);
+
+        act.Should().Throw<System.Text.Json.JsonException>();
+    }
+
+    [Fact]
     public void NpgsqlTypeHandlerRegistrar_RegisterJsonbHandler_ShouldNotThrow()
     {
         var act = () => NpgsqlTypeHandlerRegistrar.RegisterJsonbHandler<TestData>();

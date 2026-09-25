@@ -45,6 +45,9 @@
     <Project Path="tests\EricksonLopez.DapperExtensions.Sqlite.Tests\EricksonLopez.DapperExtensions.Sqlite.Tests.csproj" />
     <Project Path="tests\EricksonLopez.DapperExtensions.SqlServer.Tests\EricksonLopez.DapperExtensions.SqlServer.Tests.csproj" />
     <Project Path="tests\EricksonLopez.DapperExtensions.Tests\EricksonLopez.DapperExtensions.Tests.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.Tests.Resilience\EricksonLopez.DapperExtensions.Tests.Resilience.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.Tests.UnitOfWork\EricksonLopez.DapperExtensions.Tests.UnitOfWork.csproj" />
     <Project Path="tests\EricksonLopez.DapperExtensions.AotSmokeTest\EricksonLopez.DapperExtensions.AotSmokeTest.csproj" />
+    <Project Path="tests\EricksonLopez.DapperExtensions.Testing.Common\EricksonLopez.DapperExtensions.Testing.Common.csproj" />
   </Folder>
 </Solution>

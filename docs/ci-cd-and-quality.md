@@ -60,7 +60,7 @@ flowchart TD
 | **Publish NuGet** | `publish.yml` | `push v*.*.*` tag, `workflow_dispatch` | Pack + Sigstore Attest + OIDC login + publish to NuGet.org |
 | **Release Please** | `release-please.yml` | `push` (`main`) | Conventional Commits versioning, release PRs, dispatches publish |
 | **Mutation Testing** | `mutation-testing.yml` | Schedule Mon 04:00 UTC, `workflow_dispatch` | 11-package Stryker mutation matrix & consolidated quality gate |
-| **Benchmark Regression Gate** | `benchmark-regression-gate.yml` | `pull_request`, `workflow_dispatch` | Evaluates PR BenchmarkDotNet performance vs baseline (10% threshold) |
+| **Benchmark Regression Gate** | `benchmark-regression-gate.yml` | `pull_request`, `workflow_dispatch` | Evaluates PR BenchmarkDotNet performance vs baseline (5% threshold) |
 | **On-Demand Benchmarks** | `benchmarks.yml` | `workflow_call`, `workflow_dispatch` | Runs BenchmarkDotNet suite against containerized PostgreSQL |
 | **Weekly Deep Benchmarks** | `weekly-benchmarks.yml` | Schedule Sun 02:00 UTC, `workflow_dispatch` | Cross-TFM (.NET 8/9/10) benchmark run committing baseline to `main` |
 | **Repository Compliance** | `repo-compliance.yml` | `push`/`PR` (`main`), `workflow_dispatch` | Architecture, licensing, and compliance invariants verification |
@@ -179,11 +179,11 @@ flowchart TD
 ### 7. `benchmark-regression-gate.yml` — PR Performance Regression Check
 - **File:** `.github/workflows/benchmark-regression-gate.yml`
 - **Triggers:** Pull Request to `main` or `develop` touching `src/**` or `benchmarks/**`, and `workflow_dispatch`.
-- **Inputs:** `threshold` (default: `10` for +10% regression limit).
+- **Inputs:** `threshold` (default: `5` for +5% regression limit).
 - **Execution:**
   1. Runs BenchmarkDotNet suite on PR head.
-  2. Compares mean execution times against baseline JSON files in `benchmarks/results/`.
-  3. Fails CI if any benchmark regresses by more than `REGRESSION_THRESHOLD`%.
+  2. Compares mean execution times against baseline JSON files in `benchmarks/results/` using `scripts/verify-benchmark-gate.ps1`.
+  3. Fails CI if any benchmark regresses by more than `REGRESSION_THRESHOLD`% or violates the zero-heap allocation invariant (0 B allocated).
   4. Publishes Benchmark Regression Report to GitHub Step Summary.
 
 ---
@@ -231,5 +231,5 @@ flowchart TD
 | **Assembly Signing** | Strong Name Key (`EricksonLopez.snk`) | Deterministic assembly signing on all assemblies |
 | **Provenance Attestation** | Sigstore OIDC (`actions/attest-build-provenance`) | Cryptographic build provenance for all packages |
 | **NuGet Authentication** | NuGet Trusted Publishing (OIDC via `NuGet/login@v1`) | Zero static API keys or long-lived secrets |
-| **Benchmark Regression** | BenchmarkDotNet + Python comparator script | Max allowed performance regression: $\le 10\%$ |
+| **Benchmark Regression** | BenchmarkDotNet + PowerShell assertion script (`scripts/verify-benchmark-gate.ps1`) | Max allowed performance regression: $\le 5\%$ (Heap allocation: 0 B) |
 | **Native AOT Safety** | `EnableTrimAnalyzer=true` + `aot-smoke-test.yml` | Zero trimmer warnings (`IL2026`, `IL3050`) allowed |

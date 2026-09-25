@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using EricksonLopez.DapperExtensions.PostgreSql.Bulk;
+using EricksonLopez.DapperExtensions.Testing.Common;
 using EricksonLopez.SqlBuilder;
 using Npgsql;
 using NpgsqlTypes;
@@ -185,6 +186,23 @@ public sealed class BulkExtensionsTests
 
         result.Should().Be(25);
         command.CommandText.Should().Be("UPDATE SQL");
+    }
+
+    [Fact]
+    public async Task BulkInsertAsync_WhenCancellationTokenCanceled_ThrowsOperationCanceledException()
+    {
+        using var connection = new TestAdoConnection(ConnectionState.Closed);
+        var npgsqlParams = new[] { new NpgsqlParameter("test", NpgsqlDbType.Text) };
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = async () => await connection.BulkInsertAsync(
+            "INSERT INTO products SELECT * FROM UNNEST(@test)",
+            npgsqlParams,
+            cancellationToken: cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 }
 

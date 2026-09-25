@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using AwesomeAssertions;
 using EricksonLopez.DapperExtensions.MariaDb.Bulk;
+using EricksonLopez.DapperExtensions.Testing.Common;
 using Xunit;
+using Product = EricksonLopez.DapperExtensions.Testing.Common.BulkTestProduct;
 
 namespace EricksonLopez.DapperExtensions.MariaDb.Tests.Unit;
 
 public sealed class BulkBuilderTests
 {
-    private sealed record Product(Guid Id, string Name, decimal Price, bool IsActive);
 
     [Fact]
     public void Build_WithItems_ReturnsSqlAndParameters()
