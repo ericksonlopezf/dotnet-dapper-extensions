@@ -49,7 +49,13 @@ The framework enforces strict engineering standards across all 11 packages:
 - [x] Standalone `ISavepoint` contract with savepoint-aware retry policy (ADR-014).
 - [x] Multi-targeting across `.NET 8.0`, `.NET 9.0`, and `.NET 10.0`.
 - [x] Consolidated Stryker mutation testing quality gate with GitHub commit status.
-- [x] Multi-level executable showcase project (`samples/EricksonLopez.DapperExtensions.Showcase`, Levels 00-10).
+- [x] Multi-level executable showcase project (`samples/EricksonLopez.DapperExtensions.Showcase`, Levels 00-11).
+
+### Phase 4: Streaming, Ecosystem Demarcation & Test Hardening (Current / Unreleased)
+- [x] Unbuffered `IAsyncEnumerable<T>` query streaming extensions (`DapperStreamingExtensions.StreamAsync<T>`, ADR-019).
+- [x] Formal ecosystem demarcation between `DapperExtensions` runtime and `SqlBuilder` query compiler (ADR-018).
+- [x] Showcase Level 11: Comprehensive Public API Coverage (`Level11_ComprehensiveApiCoverageDemo.cs`).
+- [x] Test suite modularization with shared in-memory ADO.NET fakes (`Testing.Common`, `Tests.Resilience`, `Tests.UnitOfWork`).
 
 ---
 

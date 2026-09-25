@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 Production workloads require unified observability (distributed tracing and metrics) for database queries, execution latencies, and high-throughput bulk operations. Bundling `OpenTelemetry.Api` into the core `EricksonLopez.DapperExtensions` package would force unwanted runtime dependencies on lightweight or embedded scenarios.
 

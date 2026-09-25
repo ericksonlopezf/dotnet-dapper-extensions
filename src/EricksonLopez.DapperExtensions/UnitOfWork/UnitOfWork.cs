@@ -75,8 +75,7 @@ internal sealed class UnitOfWork : IUnitOfWork
             return new Savepoint(dbTx, name);
         }
 
-        // Fallback: savepoints not supported — return a no-op savepoint
-        return new NoOpSavepoint(name);
+        throw new NotSupportedException($"The underlying transaction type '{_transaction.GetType().FullName}' does not support savepoints because it does not inherit from System.Data.Common.DbTransaction.");
     }
 
     /// <inheritdoc/>
@@ -136,14 +135,6 @@ internal sealed class UnitOfWork : IUnitOfWork
 
         public Task ReleaseAsync(CancellationToken cancellationToken = default)
             => _transaction.ReleaseAsync(Name, cancellationToken);
-    }
-
-    private sealed class NoOpSavepoint : ISavepoint
-    {
-        public NoOpSavepoint(string name) => Name = name;
-        public string Name { get; }
-        public Task RollbackAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task ReleaseAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }
 

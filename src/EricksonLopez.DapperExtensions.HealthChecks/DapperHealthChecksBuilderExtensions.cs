@@ -22,7 +22,7 @@ public static class DapperHealthChecksBuilderExtensions
     /// <param name="connectionFactory">The factory that resolves an <see cref="IDbConnection"/> given the service provider.</param>
     /// <param name="configure">The optional action to configure health check options.</param>
     /// <param name="failureStatus">The health status reported upon probe failure. Defaults to <see cref="HealthStatus.Unhealthy"/>.</param>
-    /// <param name="tags">The optional tags used for filtering health check executions.</param>
+    /// <param name="tags">The optional tags applied to filter health check executions.</param>
     /// <returns>The configured <see cref="IHealthChecksBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="connectionFactory"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="name"/> is empty or whitespace</exception>
@@ -62,7 +62,7 @@ public static class DapperHealthChecksBuilderExtensions
     /// <param name="connectionFactory">The factory that resolves an <see cref="IDbConnection"/> given the service provider.</param>
     /// <param name="configure">The optional action to configure health check options.</param>
     /// <param name="failureStatus">The health status reported upon probe failure. Defaults to <see cref="HealthStatus.Unhealthy"/>.</param>
-    /// <param name="tags">The optional tags used for filtering health check executions.</param>
+    /// <param name="tags">The optional tags applied to filter health check executions.</param>
     /// <returns>The configured <see cref="IHealthChecksBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="connectionFactory"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="name"/> is empty or whitespace</exception>
@@ -83,7 +83,7 @@ public static class DapperHealthChecksBuilderExtensions
     /// <param name="connectionFactory">The factory that resolves an <see cref="IDbConnection"/> given the service provider.</param>
     /// <param name="configure">The optional action to configure health check options.</param>
     /// <param name="failureStatus">The health status reported upon probe failure. Defaults to <see cref="HealthStatus.Unhealthy"/>.</param>
-    /// <param name="tags">The optional tags used for filtering health check executions.</param>
+    /// <param name="tags">The optional tags applied to filter health check executions.</param>
     /// <returns>The configured <see cref="IHealthChecksBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="connectionFactory"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="name"/> is empty or whitespace</exception>
@@ -104,7 +104,7 @@ public static class DapperHealthChecksBuilderExtensions
     /// <param name="connectionFactory">The factory that resolves an <see cref="IDbConnection"/> given the service provider.</param>
     /// <param name="configure">The optional action to configure health check options.</param>
     /// <param name="failureStatus">The health status reported upon probe failure. Defaults to <see cref="HealthStatus.Unhealthy"/>.</param>
-    /// <param name="tags">The optional tags used for filtering health check executions.</param>
+    /// <param name="tags">The optional tags applied to filter health check executions.</param>
     /// <returns>The configured <see cref="IHealthChecksBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="connectionFactory"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="name"/> is empty or whitespace</exception>
@@ -131,7 +131,7 @@ public static class DapperHealthChecksBuilderExtensions
     /// <param name="connectionFactory">The factory that resolves an <see cref="IDbConnection"/> given the service provider.</param>
     /// <param name="configure">The optional action to configure health check options.</param>
     /// <param name="failureStatus">The health status reported upon probe failure. Defaults to <see cref="HealthStatus.Unhealthy"/>.</param>
-    /// <param name="tags">The optional tags used for filtering health check executions.</param>
+    /// <param name="tags">The optional tags applied to filter health check executions.</param>
     /// <returns>The configured <see cref="IHealthChecksBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="connectionFactory"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="name"/> is empty or whitespace</exception>
@@ -152,7 +152,7 @@ public static class DapperHealthChecksBuilderExtensions
     /// <param name="connectionFactory">The factory that resolves an <see cref="IDbConnection"/> given the service provider.</param>
     /// <param name="configure">The optional action to configure health check options.</param>
     /// <param name="failureStatus">The health status reported upon probe failure. Defaults to <see cref="HealthStatus.Unhealthy"/>.</param>
-    /// <param name="tags">The optional tags used for filtering health check executions.</param>
+    /// <param name="tags">The optional tags applied to filter health check executions.</param>
     /// <returns>The configured <see cref="IHealthChecksBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="connectionFactory"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="name"/> is empty or whitespace</exception>

@@ -209,11 +209,8 @@ public sealed class MultiMapBuilderTests : IAsyncLifetime
         var builder = MultiMapBuilder<Order>.Query(_fakeQuery)
             .Map<Customer>("customer_id", (o, c) => { o.Customer = c; return o; });
 
-        var combinersField = typeof(MultiMapBuilder<Order>).GetField("_combiners", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
-        var combiners = (System.Collections.Generic.List<Func<object[], Order, Order>>)combinersField.GetValue(builder)!;
-
         var order = new Order { Id = 1 };
-        var result = combiners[0](Array.Empty<object>(), order);
+        var result = builder.Combiners[0](Array.Empty<object>(), order);
 
         result.Should().BeSameAs(order);
     }
@@ -434,6 +431,50 @@ public sealed class MultiMapBuilderTests : IAsyncLifetime
         results.Should().HaveCount(1);
         results[0].Product.Should().NotBeNull();
         results[0].Product!.Sku.Should().Be("PROD-1");
+    }
+
+    [Fact]
+    public async Task QueryAsync_WithCustomParser_InvokesCustomParser()
+    {
+        var query = Sql.Raw("""
+            SELECT 1 AS OrderId, 'ORD-01' AS OrderNumber, 10 AS CustomerId, 'Alice' AS CustomerName;
+            """);
+
+        var results = (await MultiMapBuilder<AotOrder>
+            .Query(query)
+            .Map<AotCustomer>(
+                "CustomerId",
+                (o, c) => { o.Customer = c; return o; },
+                _ => new AotCustomer { Id = 777, Name = "CustomParserAot" })
+            .QueryAsync(_connection, _compiler))
+            .ToList();
+
+        results.Should().HaveCount(1);
+        results[0].Customer.Should().NotBeNull();
+        results[0].Customer!.Id.Should().Be(777);
+        results[0].Customer!.Name.Should().Be("CustomParserAot");
+    }
+
+    [Fact]
+    public async Task QueryGroupedAsync_WithCustomParser_InvokesCustomParser()
+    {
+        var query = Sql.Raw("""
+            SELECT 1 AS OrderId, 'ORD-01' AS OrderNumber, 10 AS CustomerId, 'Alice' AS CustomerName;
+            """);
+
+        var results = (await MultiMapBuilder<AotOrder>
+            .Query(query)
+            .Map<AotCustomer>(
+                "CustomerId",
+                (o, c) => { o.Customer = c; return o; },
+                _ => new AotCustomer { Id = 777, Name = "CustomParserAot" })
+            .QueryGroupedAsync(_connection, _compiler, o => o.Id))
+            .ToList();
+
+        results.Should().HaveCount(1);
+        results[0].Customer.Should().NotBeNull();
+        results[0].Customer!.Id.Should().Be(777);
+        results[0].Customer!.Name.Should().Be("CustomParserAot");
     }
 
     [Fact]

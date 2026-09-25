@@ -80,10 +80,18 @@ public sealed class JsonTypeHandlerTests
         result.Should().BeNull();
     }
 
+    private sealed record RegisteredItem(string Tag, int Version);
+
     [Fact]
     public void RegisterJsonHandler_RegistersHandlerInSqlMapper()
     {
-        var act = () => MySqlTypeHandlerRegistrar.RegisterJsonHandler<Metadata>();
-        act.Should().NotThrow();
+        MySqlTypeHandlerRegistrar.RegisterJsonHandler<RegisteredItem>();
+        using var connection = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=:memory:");
+        connection.Open();
+        var item = new RegisteredItem("active", 2);
+        var parameters = new DynamicParameters();
+        parameters.Add("item", item);
+        var json = connection.ExecuteScalar<string>("SELECT @item", parameters);
+        json.Should().Contain("\"tag\":\"active\"");
     }
 }

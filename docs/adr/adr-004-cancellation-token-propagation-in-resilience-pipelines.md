@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 In asynchronous database operations wrapped with Polly v8 resilience pipelines, the resilience pipeline produces an execution context and passes a `CancellationToken` (`ct`) into the delegate execution closure.
 

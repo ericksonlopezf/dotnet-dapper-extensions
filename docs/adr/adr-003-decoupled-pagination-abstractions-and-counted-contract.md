@@ -3,6 +3,9 @@
 ## Status
 Superseded by Ecosystem Unification on `EricksonLopez.Pagination`
 
+## Date
+2026-09-04
+
 ## Context
 `EricksonLopez.DapperExtensions` provides database-specific provider packages (`PostgreSQL`, `MySql`, `MariaDB`, `Oracle`, `Sqlite`, `SqlServer`) that include paginated query helpers (`QueryPagedAsync<T>`, `QueryPagedMultipleAsync<T>`, and `QueryCursorPagedAsync<T>`).
 

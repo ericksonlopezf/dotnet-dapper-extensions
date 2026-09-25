@@ -1,5 +1,5 @@
 ## ====================================================================
-## Build & Compilation Outputs
+## Build & Compilation Outputs (.NET 10 / C# / MSBuild)
 ## ====================================================================
 [Bb]in/
 [Oo]bj/
@@ -8,48 +8,82 @@
 Generated_Code/
 Generated Files/
 .dotnet/
+*.binlog
+msbuild.log
+msbuild.err
+*.rsp
 
 ## ====================================================================
-## NuGet Packages & Artifacts
+## NuGet Packages & Dependency Metadata
 ## ====================================================================
 *.nupkg
 *.snupkg
 *.nuget.props
 *.nuget.targets
 packages/
+!**/packages/build/
 project.lock.json
 project.assets.json
 
 ## ====================================================================
-## Testing, Coverage & Mutation Testing
+## Testing, Coverage & Stryker.NET
 ## ====================================================================
 [Tt]est[Rr]esults/
+**/[Tt]est[Rr]esults/
 [Cc]overage/
 [Cc]overagereport/
 StrykerOutput/
+**/StrykerOutput/
 StrykerReports/
-BenchmarkDotNet.Artifacts/
+**/StrykerReports/
+.stryker/
 *.coverage
 *.coveragexml
 *.cobertura.xml
-coverage.cobertura.xml
 *.opencover.xml
+coverage.*
+*.lcov
 
 ## ====================================================================
-## Code Quality & Static Analysis (SonarCloud/SonarQube)
+## Benchmarks (BenchmarkDotNet)
+## ====================================================================
+BenchmarkDotNet.Artifacts/
+**/BenchmarkDotNet.Artifacts/
+_benchmarkdotnet/
+# Preserve committed benchmark baseline gate file
+!benchmarks/results/baseline.json
+
+## ====================================================================
+## Profiling, Diagnostic Dumps & Tracing
+## ====================================================================
+*.dmp
+*.mdmp
+*.crash
+*.stackdump
+*.nettrace
+*.gcdump
+*.speedscope
+
+## ====================================================================
+## Code Quality & Static Analysis (SonarCloud / Analyzers)
 ## ====================================================================
 .sonarqube/
 .scannerwork/
+.localhistory/
 
 ## ====================================================================
-## IDEs & Editors
+## IDEs, Editors & Tools
 ## ====================================================================
 # Visual Studio
 .vs/
 *.user
+*.userprefs
 *.suo
 *.userosscache
 *.sln.docstates
+*.vsidx
+*.pidb
+*.booproj
 
 # Visual Studio Code
 .vscode/*
@@ -64,6 +98,19 @@ coverage.cobertura.xml
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
+
+# Fleet & Other Editors
+.fleet/
+.ionide/
+
+## ====================================================================
+## Node.js & Scripting (CI / Release Gates / Verification Scripts)
+## ====================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
 ## ====================================================================
 ## Environment, Secrets & Local Settings
@@ -85,12 +132,29 @@ appsettings.Development.json
 [Ll]ogs/
 
 ## ====================================================================
-## OS & Temporary Files
+## AI Agents, Scratch & Local Workspace Artifacts
 ## ====================================================================
+.system_generated/
+scratch/
+scratch_*
+*.scratch
+
+## ====================================================================
+## Operating System & Temporary Files
+## ====================================================================
+# Windows
 Thumbs.db
 ehthumbs.db
-Desktop.ini
+[Dd]esktop.ini
+
+# macOS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux & Editor Swaps
 *.tmp
 *.bak
 *.swp
@@ -98,3 +162,5 @@ Desktop.ini
 .#*
 *.orig
 *.rej
+*.patch
+*.diff

@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 ASP.NET Core health check endpoints (`/healthz`, `/ready`) require reliable probes to verify database connectivity, responsiveness, and degraded thresholds without allocating heavy resources.
 

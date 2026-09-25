@@ -79,9 +79,27 @@ var result = await MultiMapBuilder<Order>
 
 ---
 
-## 3. Upgrading from v1.x to v2.0.0
+## 3. Upgrading from v1.x to v2.0.0 (Release 2026-09-24)
 
+### 3.1. Architectural & Multi-Targeting Features
 - **Target Frameworks**: Multi-targeting expanded to `.NET 8.0`, `.NET 9.0`, and `.NET 10.0`.
 - **Decoupled Pagination**: Provider packages depend directly on `EricksonLopez.Pagination.Abstractions`.
 - **Standalone `ISavepoint`**: Savepoints now implement `ISavepoint` with explicit `RollbackAsync` and `ReleaseAsync` methods.
 - **New Observability Packages**: Opt-in to `EricksonLopez.DapperExtensions.OpenTelemetry` and `EricksonLopez.DapperExtensions.HealthChecks` for distributed tracing and health probes.
+- **Unbuffered Async Streaming**: `DapperStreamingExtensions.StreamAsync<T>` for memory-efficient `IAsyncEnumerable<T>` streaming.
+
+### 3.2. Strict `DbTransaction` Enforcement in `CreateSavepointAsync`
+- **What changed**: `IUnitOfWork.CreateSavepointAsync` throws `NotSupportedException` if the underlying transaction is not an ADO.NET `DbTransaction` (no more silent `NoOpSavepoint` fallback).
+- **Migration**: Ensure custom test doubles inherit from `System.Data.Common.DbTransaction` (e.g., using `TestAdoTransaction` from `EricksonLopez.DapperExtensions.Testing.Common`).
+
+### 3.3. PostgreSQL BulkExtensions `CancellationToken` Parameter
+- **What changed**: All four public bulk extension methods in `EricksonLopez.DapperExtensions.PostgreSql.BulkExtensions` require a `CancellationToken`.
+- **Migration**: Recompile consuming projects against v2.0.0 and update delegates to accept `CancellationToken`.
+
+### 3.4. Keyset Cursor Column Name Regex Validation
+- **What changed**: `QueryCursorPagedAsync<T>` enforces strict identifier validation (`^[a-zA-Z0-9_\[\]\""\.]+$`).
+- **Migration**: Provide clean column identifiers or bracketed/quoted names; avoid SQL expressions or backticks.
+
+### 3.5. Deterministic Connection Lifecycle
+- **What changed**: Bulk methods that receive an initially closed connection now deterministically close it upon completion.
+- **Migration**: Callers requiring the connection to stay open must open it explicitly prior to invoking bulk extensions (`await connection.OpenAsync()`).

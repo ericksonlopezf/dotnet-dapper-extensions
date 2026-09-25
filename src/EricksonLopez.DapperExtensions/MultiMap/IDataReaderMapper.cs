@@ -12,7 +12,7 @@ namespace EricksonLopez.DapperExtensions.MultiMap;
 /// Implementations are typically generated at compile time for types annotated with <see cref="SqlEntityAttribute"/>,
 /// enabling zero-reflection data reader hydration suitable for Native AOT environments.
 /// </remarks>
-public interface IDataReaderMapper<T>
+public interface IDataReaderMapper<out T>
 {
     /// <summary>
     /// Maps the current row of the <paramref name="reader"/> to an instance of <typeparamref name="T"/>.
