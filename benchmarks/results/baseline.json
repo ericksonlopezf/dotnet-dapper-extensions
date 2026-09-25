@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/BenchmarkDotNet/master/docs/guide/reports.md",
+  "SchemaVersion": "1.0",
+  "GeneratedAt": "2026-09-15T00:00:00Z",
+  "Description": "Canonical latency and memory allocation performance baseline for dotnet-dapper-extensions",
+  "ZeroAllocPattern": "^(QueryCursorPaged|SqlEntity|ReadFromDataReader|ZeroAlloc|Span|Stackalloc)",
+  "Benchmarks": {
+    "RowByRowInsert_100Rows": {
+      "MeanNs": 14820000.0,
+      "AllocatedBytes": 319488,
+      "ZeroAlloc": false
+    },
+    "UnnestBulkInsert_100Rows": {
+      "MeanNs": 1150000.0,
+      "AllocatedBytes": 28672,
+      "ZeroAlloc": false
+    },
+    "JsonbTypeHandler_Serialize_Performance": {
+      "MeanNs": 420.0,
+      "AllocatedBytes": 128,
+      "ZeroAlloc": false
+    },
+    "JsonbTypeHandler_Deserialize_Performance": {
+      "MeanNs": 380.0,
+      "AllocatedBytes": 192,
+      "ZeroAlloc": false
+    },
+    "QueryPagedAsync_100Rows": {
+      "MeanNs": 2500000.0,
+      "AllocatedBytes": 65536,
+      "ZeroAlloc": false
+    },
+    "QueryPagedAsync_1000Rows": {
+      "MeanNs": 18000000.0,
+      "AllocatedBytes": 524288,
+      "ZeroAlloc": false
+    },
+    "ExecuteInTransactionAsync_Performance": {
+      "MeanNs": 15000.0,
+      "AllocatedBytes": 256,
+      "ZeroAlloc": false
+    }
+  }
+}

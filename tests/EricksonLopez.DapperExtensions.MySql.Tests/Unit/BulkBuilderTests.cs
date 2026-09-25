@@ -5,13 +5,14 @@ using System.Linq;
 using AwesomeAssertions;
 using Dapper;
 using EricksonLopez.DapperExtensions.MySql.Bulk;
+using EricksonLopez.DapperExtensions.Testing.Common;
 using Xunit;
+using Product = EricksonLopez.DapperExtensions.Testing.Common.BulkTestProduct;
 
 namespace EricksonLopez.DapperExtensions.MySql.Tests.Unit;
 
 public sealed class BulkBuilderTests
 {
-    private sealed record Product(Guid Id, string Name, decimal Price, bool IsActive);
 
     [Fact]
     public void Build_WithItems_ReturnsSqlAndParameters()

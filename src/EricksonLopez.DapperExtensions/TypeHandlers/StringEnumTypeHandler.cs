@@ -17,6 +17,7 @@ public sealed class StringEnumTypeHandler<TEnum> : SqlMapper.TypeHandler<TEnum> 
     public static readonly StringEnumTypeHandler<TEnum> Default = new();
 
     /// <inheritdoc/>
+    /// <exception cref="ArgumentNullException"><paramref name="parameter"/> is <see langword="null"/>.</exception>
     public override void SetValue(IDbDataParameter parameter, TEnum value)
     {
         ArgumentNullException.ThrowIfNull(parameter);

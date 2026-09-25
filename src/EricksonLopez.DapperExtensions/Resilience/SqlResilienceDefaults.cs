@@ -35,6 +35,16 @@ public static class SqlResilienceDefaults
     ///   <item>30-second total timeout</item>
     /// </list>
     /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method returns a <see cref="Polly.ResiliencePipeline"/> (the low-level Polly v8 type).
+    /// Per ADR-017, the canonical ecosystem API returns <c>EricksonLopez.Resilience.IResiliencePipeline</c>.
+    /// Use the <c>For*Pipeline()</c> factory methods (e.g., <c>ForPostgreSqlPipeline()</c>,
+    /// <c>ForSqlServerPipeline()</c>) to obtain the canonical <c>IResiliencePipeline</c> wrappers.
+    /// The <see cref="ResiliencePipeline"/> overloads are retained as first-class compatibility APIs
+    /// and are not marked <c>[Obsolete]</c>. See ADR-017.
+    /// </para>
+    /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="detector"/> is <see langword="null"/></exception>
     public static ResiliencePipeline Standard(ISqlTransientErrorDetector detector, TimeProvider? timeProvider = null)
     {
@@ -44,18 +54,33 @@ public static class SqlResilienceDefaults
         {
             TimeProvider = timeProvider ?? TimeProvider.System
         }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(30)
-            })
-            .AddRetry(new RetryStrategyOptions
-            {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromSeconds(1),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-            })
+            .AddTimeout(CreateStandardTimeoutOptions())
+            .AddRetry(CreateStandardRetryOptions(detector))
+            .Build();
+    }
+
+    /// <summary>
+    /// Creates a typed resilience pipeline configured with retry and timeout strategies.
+    /// </summary>
+    /// <typeparam name="T">The result type produced by operations executed through the pipeline.</typeparam>
+    /// <param name="detector">The transient error detector used to evaluate database exceptions.</param>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>A <see cref="ResiliencePipeline{T}"/> configured with retry and timeout settings.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="detector"/> is <see langword="null"/></exception>
+    [UnconditionalSuppressMessage("Trimming", "IL2091",
+        Justification = "Polly's typed generic pipeline builder (AddRetry<TResult>) requires DynamicallyAccessedMemberTypes.All on TResult. " +
+                        "TResult in this context represents a Dapper query result type, not an AOT-critical type boundary. " +
+                        "Applications using NativeAOT should use the untyped ResiliencePipeline overload. ADR-006.")]
+    public static ResiliencePipeline<T> Standard<T>(ISqlTransientErrorDetector detector, TimeProvider? timeProvider = null)
+    {
+        ArgumentNullException.ThrowIfNull(detector);
+
+        return new ResiliencePipelineBuilder<T>
+        {
+            TimeProvider = timeProvider ?? TimeProvider.System
+        }
+            .AddTimeout(CreateStandardTimeoutOptions())
+            .AddRetry(CreateStandardRetryOptions<T>(detector))
             .Build();
     }
 
@@ -84,133 +109,9 @@ public static class SqlResilienceDefaults
         {
             TimeProvider = timeProvider ?? TimeProvider.System
         }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(30)
-            })
-            .AddRetry(new RetryStrategyOptions
-            {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromSeconds(1),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-            })
-            .AddCircuitBreaker(new CircuitBreakerStrategyOptions
-            {
-                FailureRatio = failureRatio,
-                SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
-                MinimumThroughput = minimumThroughput,
-                BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-            })
-            .Build();
-    }
-
-    /// <summary>
-    /// Creates an aggressive resilience pipeline optimized for high-availability scenarios.
-    /// </summary>
-    /// <param name="detector">The transient error detector used to evaluate database exceptions.</param>
-    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
-    /// <returns>
-    /// A <see cref="ResiliencePipeline"/> configured with:
-    /// <list type="bullet">
-    ///   <item>5 retry attempts with exponential backoff (500ms → 1s → 2s → 4s → 8s) and jitter</item>
-    ///   <item>60-second total timeout</item>
-    /// </list>
-    /// </returns>
-    /// <exception cref="ArgumentNullException"><paramref name="detector"/> is <see langword="null"/></exception>
-    public static ResiliencePipeline Aggressive(ISqlTransientErrorDetector detector, TimeProvider? timeProvider = null)
-    {
-        ArgumentNullException.ThrowIfNull(detector);
-
-        return new ResiliencePipelineBuilder
-        {
-            TimeProvider = timeProvider ?? TimeProvider.System
-        }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(60)
-            })
-            .AddRetry(new RetryStrategyOptions
-            {
-                MaxRetryAttempts = 5,
-                Delay = TimeSpan.FromMilliseconds(500),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-            })
-            .Build();
-    }
-
-    /// <summary>
-    /// Creates a conservative resilience pipeline designed for workloads where retries are costly.
-    /// </summary>
-    /// <param name="detector">The transient error detector used to evaluate database exceptions.</param>
-    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
-    /// <returns>
-    /// A <see cref="ResiliencePipeline"/> configured with:
-    /// <list type="bullet">
-    ///   <item>1 retry attempt after a 5-second wait</item>
-    ///   <item>120-second total timeout</item>
-    /// </list>
-    /// </returns>
-    /// <exception cref="ArgumentNullException"><paramref name="detector"/> is <see langword="null"/></exception>
-    public static ResiliencePipeline Conservative(ISqlTransientErrorDetector detector, TimeProvider? timeProvider = null)
-    {
-        ArgumentNullException.ThrowIfNull(detector);
-
-        return new ResiliencePipelineBuilder
-        {
-            TimeProvider = timeProvider ?? TimeProvider.System
-        }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(120)
-            })
-            .AddRetry(new RetryStrategyOptions
-            {
-                MaxRetryAttempts = 1,
-                Delay = TimeSpan.FromSeconds(5),
-                BackoffType = DelayBackoffType.Constant,
-                UseJitter = false,
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
-            })
-            .Build();
-    }
-
-    /// <summary>
-    /// Creates a typed resilience pipeline configured with retry and timeout strategies.
-    /// </summary>
-    /// <typeparam name="T">The result type produced by operations executed through the pipeline.</typeparam>
-    /// <param name="detector">The transient error detector used to evaluate database exceptions.</param>
-    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
-    /// <returns>A <see cref="ResiliencePipeline{T}"/> configured with retry and timeout settings.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="detector"/> is <see langword="null"/></exception>
-    [UnconditionalSuppressMessage("Trimming", "IL2091",
-        Justification = "Polly's typed generic pipeline builder (AddRetry<TResult>) requires DynamicallyAccessedMemberTypes.All on TResult. " +
-                        "TResult in this context represents a Dapper query result type, not an AOT-critical type boundary. " +
-                        "Applications using NativeAOT should use the untyped ResiliencePipeline overload. ADR-006.")]
-    public static ResiliencePipeline<T> Standard<T>(ISqlTransientErrorDetector detector, TimeProvider? timeProvider = null)
-    {
-        ArgumentNullException.ThrowIfNull(detector);
-
-        return new ResiliencePipelineBuilder<T>
-        {
-            TimeProvider = timeProvider ?? TimeProvider.System
-        }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(30)
-            })
-            .AddRetry(new RetryStrategyOptions<T>
-            {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromSeconds(1),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
-            })
+            .AddTimeout(CreateStandardTimeoutOptions())
+            .AddRetry(CreateStandardRetryOptions(detector))
+            .AddCircuitBreaker(CreateCircuitBreakerOptions(detector, failureRatio, samplingDuration, minimumThroughput, breakDuration))
             .Build();
     }
 
@@ -244,26 +145,61 @@ public static class SqlResilienceDefaults
         {
             TimeProvider = timeProvider ?? TimeProvider.System
         }
-            .AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromSeconds(30)
-            })
-            .AddRetry(new RetryStrategyOptions<T>
-            {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromSeconds(1),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
-            })
-            .AddCircuitBreaker(new CircuitBreakerStrategyOptions<T>
-            {
-                FailureRatio = failureRatio,
-                SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
-                MinimumThroughput = minimumThroughput,
-                BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
-                ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
-            })
+            .AddTimeout(CreateStandardTimeoutOptions())
+            .AddRetry(CreateStandardRetryOptions<T>(detector))
+            .AddCircuitBreaker(CreateCircuitBreakerOptions<T>(detector, failureRatio, samplingDuration, minimumThroughput, breakDuration))
+            .Build();
+    }
+
+    /// <summary>
+    /// Creates an aggressive resilience pipeline optimized for high-availability scenarios.
+    /// </summary>
+    /// <param name="detector">The transient error detector used to evaluate database exceptions.</param>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>
+    /// A <see cref="ResiliencePipeline"/> configured with:
+    /// <list type="bullet">
+    ///   <item>5 retry attempts with exponential backoff (500ms → 1s → 2s → 4s → 8s) and jitter</item>
+    ///   <item>60-second total timeout</item>
+    /// </list>
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="detector"/> is <see langword="null"/></exception>
+    public static ResiliencePipeline Aggressive(ISqlTransientErrorDetector detector, TimeProvider? timeProvider = null)
+    {
+        ArgumentNullException.ThrowIfNull(detector);
+
+        return new ResiliencePipelineBuilder
+        {
+            TimeProvider = timeProvider ?? TimeProvider.System
+        }
+            .AddTimeout(CreateAggressiveTimeoutOptions())
+            .AddRetry(CreateAggressiveRetryOptions(detector))
+            .Build();
+    }
+
+    /// <summary>
+    /// Creates a conservative resilience pipeline designed for workloads where retries are costly.
+    /// </summary>
+    /// <param name="detector">The transient error detector used to evaluate database exceptions.</param>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>
+    /// A <see cref="ResiliencePipeline"/> configured with:
+    /// <list type="bullet">
+    ///   <item>1 retry attempt after a 5-second wait</item>
+    ///   <item>120-second total timeout</item>
+    /// </list>
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="detector"/> is <see langword="null"/></exception>
+    public static ResiliencePipeline Conservative(ISqlTransientErrorDetector detector, TimeProvider? timeProvider = null)
+    {
+        ArgumentNullException.ThrowIfNull(detector);
+
+        return new ResiliencePipelineBuilder
+        {
+            TimeProvider = timeProvider ?? TimeProvider.System
+        }
+            .AddTimeout(CreateConservativeTimeoutOptions())
+            .AddRetry(CreateConservativeRetryOptions(detector))
             .Build();
     }
 
@@ -349,11 +285,10 @@ public static class SqlResilienceDefaults
     public static ResiliencePipeline ForOracleWithCircuitBreaker(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreaker(OracleTransientErrorDetector.Default, timeProvider: timeProvider);
 
-    // ─── Canonical EricksonLopez.Resilience overloads ───────────────────────────
-    // These methods return IResiliencePipeline from EricksonLopez.Resilience.Abstractions,
-    // wrapping the Polly pipeline via PollyResiliencePipeline adapter.
-    // DapperExtensions classifies the error context (ISqlTransientErrorDetector);
-    // EricksonLopez.Resilience orchestrates the retry/circuit-breaker policy.
+    // ─── Canonical EricksonLopez.Resilience Overloads ───────────────────────────
+    // These methods return the canonical IResiliencePipeline abstraction,
+    // wrapping the low-level Polly pipeline via an adapter.
+    // The detector classifies the error context while the resilience authority orchestrates retry and circuit-breaker execution.
 
     /// <summary>
     /// Creates a standard <see cref="IResiliencePipeline"/> configured with retry and timeout strategies.
@@ -422,44 +357,145 @@ public static class SqlResilienceDefaults
     // ─── Provider-specific canonical shortcuts ───────────────────────────────
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> pre-configured for SQL Server.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> configured for SQL Server operations.</returns>
     public static IResiliencePipeline ForSqlServerPipeline(TimeProvider? timeProvider = null)
         => StandardPipeline(SqlServerTransientErrorDetector.Default, "sql-sqlserver-standard", timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for SQL Server.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> with circuit breaker configured for SQL Server operations.</returns>
     public static IResiliencePipeline ForSqlServerWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(SqlServerTransientErrorDetector.Default, "sql-sqlserver-cb", timeProvider: timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> pre-configured for PostgreSQL.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> configured for PostgreSQL operations.</returns>
     public static IResiliencePipeline ForPostgreSqlPipeline(TimeProvider? timeProvider = null)
         => StandardPipeline(PostgreSqlTransientErrorDetector.Default, "sql-postgresql-standard", timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for PostgreSQL.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> with circuit breaker configured for PostgreSQL operations.</returns>
     public static IResiliencePipeline ForPostgreSqlWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(PostgreSqlTransientErrorDetector.Default, "sql-postgresql-cb", timeProvider: timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> pre-configured for MySQL.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> configured for MySQL operations.</returns>
     public static IResiliencePipeline ForMySqlPipeline(TimeProvider? timeProvider = null)
         => StandardPipeline(MySqlTransientErrorDetector.Default, "sql-mysql-standard", timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for MySQL.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> with circuit breaker configured for MySQL operations.</returns>
     public static IResiliencePipeline ForMySqlWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(MySqlTransientErrorDetector.Default, "sql-mysql-cb", timeProvider: timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> pre-configured for SQLite.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> configured for SQLite operations.</returns>
     public static IResiliencePipeline ForSqlitePipeline(TimeProvider? timeProvider = null)
         => StandardPipeline(SqliteTransientErrorDetector.Default, "sql-sqlite-standard", timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for SQLite.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> with circuit breaker configured for SQLite operations.</returns>
     public static IResiliencePipeline ForSqliteWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(SqliteTransientErrorDetector.Default, "sql-sqlite-cb", timeProvider: timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> pre-configured for Oracle Database.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> configured for Oracle Database operations.</returns>
     public static IResiliencePipeline ForOraclePipeline(TimeProvider? timeProvider = null)
         => StandardPipeline(OracleTransientErrorDetector.Default, "sql-oracle-standard", timeProvider);
 
     /// <summary>Creates a standard <see cref="IResiliencePipeline"/> with circuit breaker for Oracle Database.</summary>
+    /// <param name="timeProvider">The optional custom time provider for testing and time virtualization.</param>
+    /// <returns>An <see cref="IResiliencePipeline"/> with circuit breaker configured for Oracle Database operations.</returns>
     public static IResiliencePipeline ForOracleWithCircuitBreakerPipeline(TimeProvider? timeProvider = null)
         => StandardWithCircuitBreakerPipeline(OracleTransientErrorDetector.Default, "sql-oracle-cb", timeProvider: timeProvider);
+
+    // ─── Internal Strategy Option Factories (Tested directly for Mutation Gates) ──────────────
+
+    internal static TimeoutStrategyOptions CreateStandardTimeoutOptions() => new()
+    {
+        Timeout = TimeSpan.FromSeconds(30)
+    };
+
+    internal static RetryStrategyOptions CreateStandardRetryOptions(ISqlTransientErrorDetector detector) => new()
+    {
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(1),
+        BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true,
+        ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
+    };
+
+    internal static RetryStrategyOptions<T> CreateStandardRetryOptions<T>(ISqlTransientErrorDetector detector) => new()
+    {
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(1),
+        BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true,
+        ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
+    };
+
+    internal static TimeoutStrategyOptions CreateAggressiveTimeoutOptions() => new()
+    {
+        Timeout = TimeSpan.FromSeconds(60)
+    };
+
+    internal static RetryStrategyOptions CreateAggressiveRetryOptions(ISqlTransientErrorDetector detector) => new()
+    {
+        MaxRetryAttempts = 5,
+        Delay = TimeSpan.FromMilliseconds(500),
+        BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true,
+        ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
+    };
+
+    internal static TimeoutStrategyOptions CreateConservativeTimeoutOptions() => new()
+    {
+        Timeout = TimeSpan.FromSeconds(120)
+    };
+
+    internal static RetryStrategyOptions CreateConservativeRetryOptions(ISqlTransientErrorDetector detector) => new()
+    {
+        MaxRetryAttempts = 1,
+        Delay = TimeSpan.FromSeconds(5),
+        BackoffType = DelayBackoffType.Constant,
+        UseJitter = false,
+        ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
+    };
+
+    internal static CircuitBreakerStrategyOptions CreateCircuitBreakerOptions(
+        ISqlTransientErrorDetector detector,
+        double failureRatio,
+        TimeSpan? samplingDuration,
+        int minimumThroughput,
+        TimeSpan? breakDuration) => new()
+        {
+            FailureRatio = failureRatio,
+            SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
+            MinimumThroughput = minimumThroughput,
+            BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
+            ShouldHandle = new PredicateBuilder().Handle<Exception>(detector.IsTransient)
+        };
+
+    internal static CircuitBreakerStrategyOptions<T> CreateCircuitBreakerOptions<T>(
+        ISqlTransientErrorDetector detector,
+        double failureRatio,
+        TimeSpan? samplingDuration,
+        int minimumThroughput,
+        TimeSpan? breakDuration) => new()
+        {
+            FailureRatio = failureRatio,
+            SamplingDuration = samplingDuration ?? TimeSpan.FromSeconds(10),
+            MinimumThroughput = minimumThroughput,
+            BreakDuration = breakDuration ?? TimeSpan.FromSeconds(30),
+            ShouldHandle = new PredicateBuilder<T>().Handle<Exception>(detector.IsTransient)
+        };
 }
 
 

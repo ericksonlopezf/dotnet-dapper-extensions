@@ -1,26 +1,32 @@
 {
   "stryker-config": {
     "project": "EricksonLopez.DapperExtensions.PostgreSql.csproj",
-    "reporters": [
-      "ClearText",
-      "Progress",
-      "Json"
+    "test-projects": [
+      "EricksonLopez.DapperExtensions.PostgreSql.Tests.csproj"
     ],
-    "concurrency": 6,
-    "additional-timeout": 10000,
+    "test-case-filter": "Category!=Integration",
+    "mutate": [
+      "**/*.cs",
+      "!bin/**",
+      "!obj/**",
+      "!**/*.g.cs",
+      "!**/*.AssemblyInfo.cs"
+    ],
     "thresholds": {
       "high": 100,
       "low": 98,
       "break": 95
     },
-    "test-case-filter": "Category!=Integration",
-    "mutate": [
-      "**/*.cs",
-      "!**/bin/**",
-      "!**/obj/**"
+    "reporters": [
+      "html",
+      "json",
+      "cleartext",
+      "progress"
     ],
     "ignore-methods": [
+      "ConfigureAwait",
       "*ConfigureAwait"
-    ]
+    ],
+    "concurrency": 2
   }
 }

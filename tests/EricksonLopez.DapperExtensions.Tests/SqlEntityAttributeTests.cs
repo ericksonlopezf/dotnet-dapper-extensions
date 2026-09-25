@@ -31,7 +31,7 @@ public class SqlEntityAttributeTests
     }
 
     [Fact]
-    public void SqlEntityAttribute_HasCorrectAttributeUsage()
+    public void SqlEntityAttribute_AttributeUsage_IsValidOnClassAndStructWithoutMultipleOrInherited()
     {
         var usage = typeof(SqlEntityAttribute).GetCustomAttribute<AttributeUsageAttribute>();
         usage.Should().NotBeNull();
@@ -47,7 +47,7 @@ public class SqlEntityAttributeTests
     private readonly struct DecoratedStruct;
 
     [Fact]
-    public void SqlEntityAttribute_CanDecorateClassAndStruct()
+    public void SqlEntityAttribute_WhenAppliedToClassAndStruct_PreservesMetadata()
     {
         var classAttr = typeof(DecoratedClass).GetCustomAttribute<SqlEntityAttribute>();
         classAttr.Should().NotBeNull();

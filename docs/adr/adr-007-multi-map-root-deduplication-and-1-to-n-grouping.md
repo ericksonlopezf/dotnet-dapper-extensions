@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 When performing relational SQL `JOIN` queries across 1:N entity relationships (e.g. `Order` JOIN `OrderItem`), standard row-by-row mapping returns multiple rows with identical root entity primary keys. Without a key-based deduplication mechanism, standard multi-map execution produces multiple distinct root entity instances, each containing only a subset of child entities.
 

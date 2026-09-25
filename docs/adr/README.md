@@ -4,7 +4,7 @@
 |---|---|:---:|
 | [ADR-001](adr-001-multi-provider-architecture-and-dialect-isolation.md) | Multi-Provider Architecture and Dialect Isolation | Accepted |
 | [ADR-002](adr-002-unnest-bulk-strategy-postgresql.md) | PostgreSQL UNNEST Bulk Operation Strategy | Accepted |
-| [ADR-003](adr-003-decoupled-pagination-abstractions-and-counted-contract.md) | Decoupled Pagination Abstractions and ICountedPagedList Contract | Accepted |
+| [ADR-003](adr-003-decoupled-pagination-abstractions-and-counted-contract.md) | Decoupled Pagination Abstractions and ICountedPagedList Contract | Superseded |
 | [ADR-004](adr-004-cancellation-token-propagation-in-resilience-pipelines.md) | CancellationToken Propagation in Resilience Pipelines | Accepted |
 | [ADR-005](adr-005-coexistence-of-provider-transaction-extensions-and-unit-of-work.md) | Coexistence of Provider TransactionExtensions and Core UnitOfWork | Accepted |
 | [ADR-006](adr-006-native-aot-and-trimming-compliance-enforcement.md) | Native AOT and Trimming Compliance Enforcement | Accepted |
@@ -16,7 +16,9 @@
 | [ADR-012](adr-012-cursor-based-pagination-strategy.md) | Cursor-Based (Keyset) Pagination Strategy | Accepted |
 | [ADR-013](adr-013-source-generator-for-aot-datareader-mapper.md) | Source Generator for Zero-Reflection Native AOT IDataReaderMapper | Accepted |
 | [ADR-014](adr-014-savepoint-aware-resilience-retry.md) | Savepoint-Aware Resilience Retry | Accepted |
-| ~~ADR-015~~ | *(Slot intentionally unoccupied — decision was withdrawn before ratification)* | — |
+| [ADR-015](adr-015-withdrawn-dynamic-pipeline-preset-caching.md) | Dynamic Pipeline Preset Caching | Withdrawn |
 | [ADR-016](adr-016-resilience-pipeline-scope-wrap-unit-of-work.md) | Resilience Pipeline Scope — Wrap Unit of Work, Not Individual Commands | Accepted |
 | [ADR-017](adr-017-ecosystem-convergence-resilience-and-uow-transaction-boundary.md) | Ecosystem Convergence — Resilience and Unit of Work Transaction Boundary | Accepted |
+| [ADR-018](adr-018-architectural-boundary-and-coexistence-with-sql-builder.md) | Ecosystem Demarcation — DapperExtensions vs SqlBuilder Boundary | Accepted |
+| [ADR-019](adr-019-async-streaming-dapper-streaming-extensions.md) | Async Streaming via DapperStreamingExtensions / IAsyncEnumerable<T> | Accepted |
 | [REJECT-011](reject-011-custom-expression-tree-interpreters-in-dapper.md) | REJECT: Custom Expression Tree Interpreters in Dapper | Rejected |

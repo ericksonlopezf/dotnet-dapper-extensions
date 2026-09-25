@@ -46,10 +46,10 @@ var page = await connection.QueryCursorPagedAsync<AuditEvent>(
 ```
 
 ### 2. MultiMapBuilder Grouping Allocation
-`MultiMapBuilder.QueryGroupedAsync` uses an internal dictionary to deduplicate root entities by key selector without performing intermediate LINQ `GroupBy` object allocations.
+`MultiMapBuilder.QueryGroupedAsync` uses an internal dictionary to deduplicate root entities by key selector, eliminating intermediate LINQ `GroupBy` object allocations. Note that during row iteration, a lightweight transient parts array (`new object[parsers.Length]`) is allocated per data reader row to feed downstream combiners without reflection.
 
 ### 3. Roslyn Source Generated Mappers (Native AOT)
-By annotating classes with `[SqlEntity]`, the compile-time generator implements `IDataReaderMapper<T>`, completely eliminating reflection, dynamic method compilation (IL emit), and boxing overhead in AOT environments:
+By annotating classes with `[SqlEntity]`, the compile-time generator adds static `ReadFromDataReader()` and `GetMultiMapReaderFactory()` methods directly to the annotated partial class, completely eliminating reflection, dynamic method compilation (IL emit), and boxing overhead in AOT environments. These methods are **not** an implementation of `IDataReaderMapper<T>` (which is a separate, manually-implemented interface):
 
 ```csharp
 [SqlEntity(TableName = "orders")]

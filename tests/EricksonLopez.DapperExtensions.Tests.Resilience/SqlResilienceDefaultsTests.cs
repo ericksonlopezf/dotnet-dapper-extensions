@@ -1,5 +1,6 @@
 // Copyright © Erickson Lopez. MIT License.
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
@@ -63,70 +64,121 @@ public class SqlResilienceDefaultsTests
 
     // ─── Pipeline Instantiation ─────────────────────────────────────────
 
+    // ─── Pipeline Strategy Options Invariants (Mutation Safety Gates) ──
+
     [Fact]
-    public void Standard_ReturnsNonNullPipeline()
+    public void CreateStandardRetryOptions_ConfiguresCorrectParametersWithJitter()
     {
-        var pipeline = SqlResilienceDefaults.Standard(_detector);
-        pipeline.Should().NotBeNull();
+        var options = SqlResilienceDefaults.CreateStandardRetryOptions(_detector);
+        options.MaxRetryAttempts.Should().Be(3);
+        options.Delay.Should().Be(TimeSpan.FromSeconds(1));
+        options.BackoffType.Should().Be(DelayBackoffType.Exponential);
+        options.UseJitter.Should().BeTrue();
+        options.ShouldHandle.Should().NotBeNull();
     }
 
     [Fact]
-    public void Aggressive_ReturnsNonNullPipeline()
+    public void CreateStandardTimeoutOptions_Configures30Seconds()
     {
-        var pipeline = SqlResilienceDefaults.Aggressive(_detector);
-        pipeline.Should().NotBeNull();
+        var options = SqlResilienceDefaults.CreateStandardTimeoutOptions();
+        options.Timeout.Should().Be(TimeSpan.FromSeconds(30));
     }
 
     [Fact]
-    public void Conservative_ReturnsNonNullPipeline()
+    public void CreateAggressiveRetryOptions_Configures5AttemptsWith500MsDelayAndJitter()
     {
-        var pipeline = SqlResilienceDefaults.Conservative(_detector);
-        pipeline.Should().NotBeNull();
+        var options = SqlResilienceDefaults.CreateAggressiveRetryOptions(_detector);
+        options.MaxRetryAttempts.Should().Be(5);
+        options.Delay.Should().Be(TimeSpan.FromMilliseconds(500));
+        options.BackoffType.Should().Be(DelayBackoffType.Exponential);
+        options.UseJitter.Should().BeTrue();
+        options.ShouldHandle.Should().NotBeNull();
     }
 
     [Fact]
-    public void Standard_Generic_ReturnsNonNullPipeline()
+    public void CreateAggressiveTimeoutOptions_Configures60Seconds()
     {
-        var pipeline = SqlResilienceDefaults.Standard<int>(_detector);
-        pipeline.Should().NotBeNull();
+        var options = SqlResilienceDefaults.CreateAggressiveTimeoutOptions();
+        options.Timeout.Should().Be(TimeSpan.FromSeconds(60));
     }
 
     [Fact]
-    public void StandardWithCircuitBreaker_DefaultParameters_ReturnsNonNullPipeline()
+    public void CreateConservativeRetryOptions_Configures1AttemptWith5SecondsDelayAndNoJitter()
     {
-        var pipeline = SqlResilienceDefaults.StandardWithCircuitBreaker(_detector);
-        pipeline.Should().NotBeNull();
+        var options = SqlResilienceDefaults.CreateConservativeRetryOptions(_detector);
+        options.MaxRetryAttempts.Should().Be(1);
+        options.Delay.Should().Be(TimeSpan.FromSeconds(5));
+        options.BackoffType.Should().Be(DelayBackoffType.Constant);
+        options.UseJitter.Should().BeFalse();
+        options.ShouldHandle.Should().NotBeNull();
     }
 
     [Fact]
-    public void StandardWithCircuitBreaker_CustomParameters_ReturnsNonNullPipeline()
+    public void CreateConservativeTimeoutOptions_Configures120Seconds()
     {
-        var pipeline = SqlResilienceDefaults.StandardWithCircuitBreaker(
+        var options = SqlResilienceDefaults.CreateConservativeTimeoutOptions();
+        options.Timeout.Should().Be(TimeSpan.FromSeconds(120));
+    }
+
+    [Fact]
+    public void CreateCircuitBreakerOptions_ConfiguresSpecifiedParameters()
+    {
+        var options = SqlResilienceDefaults.CreateCircuitBreakerOptions(
             _detector,
             failureRatio: 0.7,
             samplingDuration: TimeSpan.FromSeconds(5),
             minimumThroughput: 20,
             breakDuration: TimeSpan.FromSeconds(15));
-        pipeline.Should().NotBeNull();
+
+        options.FailureRatio.Should().Be(0.7);
+        options.SamplingDuration.Should().Be(TimeSpan.FromSeconds(5));
+        options.MinimumThroughput.Should().Be(20);
+        options.BreakDuration.Should().Be(TimeSpan.FromSeconds(15));
+        options.ShouldHandle.Should().NotBeNull();
     }
 
     [Fact]
-    public void StandardWithCircuitBreaker_Generic_DefaultParameters_ReturnsNonNullPipeline()
+    public void CreateCircuitBreakerOptions_WithNullOptionalParameters_UsesDefaults()
     {
-        var pipeline = SqlResilienceDefaults.StandardWithCircuitBreaker<string>(_detector);
-        pipeline.Should().NotBeNull();
+        var options = SqlResilienceDefaults.CreateCircuitBreakerOptions(
+            _detector,
+            failureRatio: 0.5,
+            samplingDuration: null,
+            minimumThroughput: 10,
+            breakDuration: null);
+
+        options.FailureRatio.Should().Be(0.5);
+        options.SamplingDuration.Should().Be(TimeSpan.FromSeconds(10));
+        options.MinimumThroughput.Should().Be(10);
+        options.BreakDuration.Should().Be(TimeSpan.FromSeconds(30));
     }
 
     [Fact]
-    public void StandardWithCircuitBreaker_Generic_CustomParameters_ReturnsNonNullPipeline()
+    public void CreateStandardRetryOptions_Generic_ConfiguresCorrectParametersWithJitter()
     {
-        var pipeline = SqlResilienceDefaults.StandardWithCircuitBreaker<string>(
+        var options = SqlResilienceDefaults.CreateStandardRetryOptions<int>(_detector);
+        options.MaxRetryAttempts.Should().Be(3);
+        options.Delay.Should().Be(TimeSpan.FromSeconds(1));
+        options.BackoffType.Should().Be(DelayBackoffType.Exponential);
+        options.UseJitter.Should().BeTrue();
+        options.ShouldHandle.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void CreateCircuitBreakerOptions_Generic_ConfiguresSpecifiedParameters()
+    {
+        var options = SqlResilienceDefaults.CreateCircuitBreakerOptions<string>(
             _detector,
             failureRatio: 0.8,
             samplingDuration: TimeSpan.FromSeconds(8),
             minimumThroughput: 15,
             breakDuration: TimeSpan.FromSeconds(25));
-        pipeline.Should().NotBeNull();
+
+        options.FailureRatio.Should().Be(0.8);
+        options.SamplingDuration.Should().Be(TimeSpan.FromSeconds(8));
+        options.MinimumThroughput.Should().Be(15);
+        options.BreakDuration.Should().Be(TimeSpan.FromSeconds(25));
+        options.ShouldHandle.Should().NotBeNull();
     }
 
     // ─── Execution, Retries, Timeouts & Options ─────────────────────────
@@ -344,13 +396,12 @@ public class SqlResilienceDefaultsTests
         var pipeline = SqlResilienceDefaults.Standard(_detector, timeProvider);
 
         var tcs = new TaskCompletionSource<bool>();
-        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 
         var task = pipeline.ExecuteAsync(async ct =>
         {
             using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
             await tcs.Task;
-        }, cts.Token).AsTask();
+        }, CancellationToken.None).AsTask();
 
         timeProvider.Advance(TimeSpan.FromSeconds(31));
 
@@ -365,18 +416,39 @@ public class SqlResilienceDefaultsTests
         var pipeline = SqlResilienceDefaults.Aggressive(_detector, timeProvider);
 
         var tcs = new TaskCompletionSource<bool>();
-        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 
         var task = pipeline.ExecuteAsync(async ct =>
         {
             using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
             await tcs.Task;
-        }, cts.Token).AsTask();
+        }, CancellationToken.None).AsTask();
 
         timeProvider.Advance(TimeSpan.FromSeconds(61));
 
         var act = async () => await task;
         await act.Should().ThrowAsync<TimeoutRejectedException>();
+    }
+
+    [Fact]
+    public async Task Aggressive_Pipeline_DoesNotTimeout_Before60Seconds()
+    {
+        var timeProvider = new FakeTimeProvider();
+        var pipeline = SqlResilienceDefaults.Aggressive(_detector, timeProvider);
+
+        var tcs = new TaskCompletionSource<string>();
+
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
+            return await tcs.Task;
+        }, CancellationToken.None).AsTask();
+
+        // 45s is > 30s (default Polly timeout) but < 60s (Aggressive timeout)
+        timeProvider.Advance(TimeSpan.FromSeconds(45));
+        tcs.SetResult("SUCCESS_AT_45S");
+
+        var result = await task;
+        result.Should().Be("SUCCESS_AT_45S");
     }
 
     [Fact]
@@ -386,18 +458,39 @@ public class SqlResilienceDefaultsTests
         var pipeline = SqlResilienceDefaults.Conservative(_detector, timeProvider);
 
         var tcs = new TaskCompletionSource<bool>();
-        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 
         var task = pipeline.ExecuteAsync(async ct =>
         {
             using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
             await tcs.Task;
-        }, cts.Token).AsTask();
+        }, CancellationToken.None).AsTask();
 
         timeProvider.Advance(TimeSpan.FromSeconds(121));
 
         var act = async () => await task;
         await act.Should().ThrowAsync<TimeoutRejectedException>();
+    }
+
+    [Fact]
+    public async Task Conservative_Pipeline_DoesNotTimeout_Before120Seconds()
+    {
+        var timeProvider = new FakeTimeProvider();
+        var pipeline = SqlResilienceDefaults.Conservative(_detector, timeProvider);
+
+        var tcs = new TaskCompletionSource<string>();
+
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
+            return await tcs.Task;
+        }, CancellationToken.None).AsTask();
+
+        // 90s is > 30s and > 60s, but < 120s (Conservative timeout)
+        timeProvider.Advance(TimeSpan.FromSeconds(90));
+        tcs.SetResult("SUCCESS_AT_90S");
+
+        var result = await task;
+        result.Should().Be("SUCCESS_AT_90S");
     }
 
     [Fact]
@@ -407,13 +500,12 @@ public class SqlResilienceDefaultsTests
         var pipeline = SqlResilienceDefaults.Standard<int>(_detector, timeProvider);
 
         var tcs = new TaskCompletionSource<int>();
-        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 
         var task = pipeline.ExecuteAsync(async ct =>
         {
             using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
             return await tcs.Task;
-        }, cts.Token).AsTask();
+        }, CancellationToken.None).AsTask();
 
         timeProvider.Advance(TimeSpan.FromSeconds(31));
 
@@ -428,13 +520,12 @@ public class SqlResilienceDefaultsTests
         var pipeline = SqlResilienceDefaults.StandardWithCircuitBreaker(_detector, timeProvider: timeProvider);
 
         var tcs = new TaskCompletionSource<bool>();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
         var task = pipeline.ExecuteAsync(async ct =>
         {
             using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
             await tcs.Task;
-        }, cts.Token).AsTask();
+        }, CancellationToken.None).AsTask();
 
         timeProvider.Advance(TimeSpan.FromSeconds(31));
 
@@ -449,13 +540,12 @@ public class SqlResilienceDefaultsTests
         var pipeline = SqlResilienceDefaults.StandardWithCircuitBreaker<int>(_detector, timeProvider: timeProvider);
 
         var tcs = new TaskCompletionSource<int>();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
         var task = pipeline.ExecuteAsync(async ct =>
         {
             using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
             return await tcs.Task;
-        }, cts.Token).AsTask();
+        }, CancellationToken.None).AsTask();
 
         timeProvider.Advance(TimeSpan.FromSeconds(31));
 
@@ -589,19 +679,15 @@ public class SqlResilienceDefaultsTests
         var timeProvider = new FakeTimeProvider();
         var pipeline = SqlResilienceDefaults.Aggressive(_detector, timeProvider);
 
-        var tcs = new TaskCompletionSource<bool>();
-        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
-
-        var task = pipeline.ExecuteAsync(async ct =>
+        var executed = false;
+        await pipeline.ExecuteAsync(ct =>
         {
-            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
             timeProvider.Advance(TimeSpan.FromSeconds(45));
-            tcs.TrySetResult(true);
-            await tcs.Task;
-        }, cts.Token).AsTask();
+            executed = !ct.IsCancellationRequested;
+            return ValueTask.CompletedTask;
+        });
 
-        await task;
-        task.IsCompletedSuccessfully.Should().BeTrue();
+        executed.Should().BeTrue();
     }
 
     [Fact]
@@ -610,19 +696,15 @@ public class SqlResilienceDefaultsTests
         var timeProvider = new FakeTimeProvider();
         var pipeline = SqlResilienceDefaults.Conservative(_detector, timeProvider);
 
-        var tcs = new TaskCompletionSource<bool>();
-        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
-
-        var task = pipeline.ExecuteAsync(async ct =>
+        var executed = false;
+        await pipeline.ExecuteAsync(ct =>
         {
-            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
             timeProvider.Advance(TimeSpan.FromSeconds(60));
-            tcs.TrySetResult(true);
-            await tcs.Task;
-        }, cts.Token).AsTask();
+            executed = !ct.IsCancellationRequested;
+            return ValueTask.CompletedTask;
+        });
 
-        await task;
-        task.IsCompletedSuccessfully.Should().BeTrue();
+        executed.Should().BeTrue();
     }
 
     [Fact]
@@ -1128,5 +1210,373 @@ public class SqlResilienceDefaultsTests
         SqlResilienceDefaults.ForSqliteWithCircuitBreakerPipeline().Should().NotBeNull();
         SqlResilienceDefaults.ForOraclePipeline().Should().NotBeNull();
         SqlResilienceDefaults.ForOracleWithCircuitBreakerPipeline().Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ForSqlServerPipeline_WhenSqlTransientDeadlock_RetriesAndSucceeds()
+    {
+        var tp = new FakeTimeProvider();
+        var pipeline = SqlResilienceDefaults.ForSqlServerPipeline(tp);
+        var attempts = 0;
+
+        await pipeline.ExecuteAsync(async _ =>
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                throw new TestDbException("Deadlock victim", errorCode: 1205);
+            }
+            await Task.CompletedTask;
+        });
+
+        attempts.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ForPostgreSqlPipeline_WhenPostgresSerializationFailure_RetriesAndSucceeds()
+    {
+        var tp = new FakeTimeProvider();
+        var pipeline = SqlResilienceDefaults.ForPostgreSqlPipeline(tp);
+        var attempts = 0;
+
+        await pipeline.ExecuteAsync(async _ =>
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                throw new TestDbException("Serialization failure", sqlState: "40001");
+            }
+            await Task.CompletedTask;
+        });
+
+        attempts.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ForMySqlPipeline_WhenMySqlDeadlock_RetriesAndSucceeds()
+    {
+        var tp = new FakeTimeProvider();
+        var pipeline = SqlResilienceDefaults.ForMySqlPipeline(tp);
+        var attempts = 0;
+
+        await pipeline.ExecuteAsync(async _ =>
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                throw new TestDbException("Deadlock found", errorCode: 1213);
+            }
+            await Task.CompletedTask;
+        });
+
+        attempts.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ForSqlitePipeline_WhenSqliteBusy_RetriesAndSucceeds()
+    {
+        var tp = new FakeTimeProvider();
+        var pipeline = SqlResilienceDefaults.ForSqlitePipeline(tp);
+        var attempts = 0;
+
+        await pipeline.ExecuteAsync(async _ =>
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                throw new TestDbException("Database is locked", errorCode: 5);
+            }
+            await Task.CompletedTask;
+        });
+
+        attempts.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ForOraclePipeline_WhenOracleDeadlock_RetriesAndSucceeds()
+    {
+        var tp = new FakeTimeProvider();
+        var pipeline = SqlResilienceDefaults.ForOraclePipeline(tp);
+        var attempts = 0;
+
+        await pipeline.ExecuteAsync(async _ =>
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                throw new TestDbException("Deadlock detected", errorCode: 60);
+            }
+            await Task.CompletedTask;
+        });
+
+        attempts.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ForSqlServerPipeline_WhenNonTransientException_FailsImmediatelyWithoutRetry()
+    {
+        var tp = new FakeTimeProvider();
+        var pipeline = SqlResilienceDefaults.ForSqlServerPipeline(tp);
+        var attempts = 0;
+
+        var act = async () => await pipeline.ExecuteAsync(async _ =>
+        {
+            attempts++;
+            throw new TestDbException("Invalid object name", errorCode: 208);
+        });
+
+        await act.Should().ThrowAsync<TestDbException>();
+        attempts.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task StandardPipeline_WhenOperationExceeds30SecondsTimeout_ThrowsTimeoutRejectedException()
+    {
+        var tp = new FakeTimeProvider { AutoTriggerDelays = false };
+        var pipeline = SqlResilienceDefaults.Standard(SqlServerTransientErrorDetector.Default, timeProvider: tp);
+
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(60), tp, ct);
+        }).AsTask();
+
+        // Advance 29 seconds: still pending
+        tp.Advance(TimeSpan.FromSeconds(29));
+        task.IsCompleted.Should().BeFalse();
+
+        // Advance past 30 seconds: triggers timeout
+        tp.Advance(TimeSpan.FromSeconds(2));
+
+        var act = async () => await task;
+        await act.Should().ThrowAsync<TimeoutRejectedException>();
+    }
+
+    [Fact]
+    public async Task Standard_Pipeline_WhenCancellationTokenCancelledDuringRetryDelay_AbortsAndThrowsOperationCanceledException()
+    {
+        var timeProvider = new FakeTimeProvider { AutoTriggerDelays = false };
+        var pipeline = SqlResilienceDefaults.Standard(
+            SqlServerTransientErrorDetector.Default,
+            timeProvider: timeProvider);
+
+        using var cts = new CancellationTokenSource();
+        var attempts = 0;
+
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                // First attempt fails with transient error, triggering retry backoff delay
+                throw new TestDbException("deadlock", errorCode: 1205);
+            }
+            await Task.CompletedTask;
+        }, cts.Token).AsTask();
+
+        // While backoff delay is waiting (not auto-triggered), cancel the token
+        cts.Cancel();
+
+        var act = async () => await task;
+        await act.Should().ThrowAsync<OperationCanceledException>();
+
+        // Verify attempt 2 was never executed due to cancellation during retry delay
+        attempts.Should().Be(1);
+    }
+
+    // ─── Timeout Strategy Tests ──────────────────────────────────────────────
+
+    [Fact]
+    public async Task Standard_Pipeline_WhenExecutionExceeds30Seconds_ThrowsTimeoutRejectedException()
+    {
+        var timeProvider = new FakeTimeProvider { AutoTriggerDelays = false };
+        var pipeline = SqlResilienceDefaults.Standard(SqlServerTransientErrorDetector.Default, timeProvider);
+
+        var tcs = new TaskCompletionSource<bool>();
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
+            await tcs.Task;
+        }, CancellationToken.None).AsTask();
+
+        timeProvider.Advance(TimeSpan.FromSeconds(31));
+
+        var act = async () => await task;
+        await act.Should().ThrowAsync<TimeoutRejectedException>();
+    }
+
+    [Fact]
+    public async Task Standard_Generic_Pipeline_WhenExecutionExceeds30Seconds_ThrowsTimeoutRejectedException()
+    {
+        var timeProvider = new FakeTimeProvider { AutoTriggerDelays = false };
+        var pipeline = SqlResilienceDefaults.Standard<string>(SqlServerTransientErrorDetector.Default, timeProvider);
+
+        var tcs = new TaskCompletionSource<string>();
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
+            return await tcs.Task;
+        }, CancellationToken.None).AsTask();
+
+        timeProvider.Advance(TimeSpan.FromSeconds(31));
+
+        var act = async () => await task;
+        await act.Should().ThrowAsync<TimeoutRejectedException>();
+    }
+
+    [Fact]
+    public async Task StandardWithCircuitBreaker_WhenExecutionExceeds30Seconds_ThrowsTimeoutRejectedException()
+    {
+        var timeProvider = new FakeTimeProvider { AutoTriggerDelays = false };
+        var pipeline = SqlResilienceDefaults.StandardWithCircuitBreaker(SqlServerTransientErrorDetector.Default, timeProvider: timeProvider);
+
+        var tcs = new TaskCompletionSource<bool>();
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
+            await tcs.Task;
+        }, CancellationToken.None).AsTask();
+
+        timeProvider.Advance(TimeSpan.FromSeconds(31));
+
+        var act = async () => await task;
+        await act.Should().ThrowAsync<TimeoutRejectedException>();
+    }
+
+    [Fact]
+    public async Task Aggressive_Pipeline_WhenExecutionExceeds60Seconds_ThrowsTimeoutRejectedException()
+    {
+        var timeProvider = new FakeTimeProvider { AutoTriggerDelays = false };
+        var pipeline = SqlResilienceDefaults.Aggressive(SqlServerTransientErrorDetector.Default, timeProvider);
+
+        var tcs = new TaskCompletionSource<bool>();
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
+            await tcs.Task;
+        }, CancellationToken.None).AsTask();
+
+        timeProvider.Advance(TimeSpan.FromSeconds(61));
+
+        var act = async () => await task;
+        await act.Should().ThrowAsync<TimeoutRejectedException>();
+    }
+
+    [Fact]
+    public async Task Aggressive_Pipeline_WhenExecutionWithin60Seconds_DoesNotTimeOut()
+    {
+        var timeProvider = new FakeTimeProvider { AutoTriggerDelays = false };
+        var pipeline = SqlResilienceDefaults.Aggressive(SqlServerTransientErrorDetector.Default, timeProvider);
+
+        var tcs = new TaskCompletionSource<string>();
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
+            return await tcs.Task;
+        }, CancellationToken.None).AsTask();
+
+        // 45s is greater than default 30s but within Aggressive 60s
+        timeProvider.Advance(TimeSpan.FromSeconds(45));
+        tcs.TrySetResult("COMPLETED");
+
+        var result = await task;
+        result.Should().Be("COMPLETED");
+    }
+
+    [Fact]
+    public async Task Conservative_Pipeline_WhenExecutionExceeds120Seconds_ThrowsTimeoutRejectedException()
+    {
+        var timeProvider = new FakeTimeProvider { AutoTriggerDelays = false };
+        var pipeline = SqlResilienceDefaults.Conservative(SqlServerTransientErrorDetector.Default, timeProvider);
+
+        var tcs = new TaskCompletionSource<bool>();
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
+            await tcs.Task;
+        }, CancellationToken.None).AsTask();
+
+        timeProvider.Advance(TimeSpan.FromSeconds(121));
+
+        var act = async () => await task;
+        await act.Should().ThrowAsync<TimeoutRejectedException>();
+    }
+
+    [Fact]
+    public async Task Conservative_Pipeline_WhenExecutionWithin120Seconds_DoesNotTimeOut()
+    {
+        var timeProvider = new FakeTimeProvider { AutoTriggerDelays = false };
+        var pipeline = SqlResilienceDefaults.Conservative(SqlServerTransientErrorDetector.Default, timeProvider);
+
+        var tcs = new TaskCompletionSource<string>();
+        var task = pipeline.ExecuteAsync(async ct =>
+        {
+            using var reg = ct.Register(() => tcs.TrySetCanceled(ct));
+            return await tcs.Task;
+        }, CancellationToken.None).AsTask();
+
+        // 90s is greater than 30s/60s but within Conservative 120s
+        timeProvider.Advance(TimeSpan.FromSeconds(90));
+        tcs.TrySetResult("CONSERVATIVE_OK");
+
+        var result = await task;
+        result.Should().Be("CONSERVATIVE_OK");
+    }
+
+    [Fact]
+    public async Task Standard_Pipeline_SupportsHighConcurrencyWithoutStateCorruption()
+    {
+        var timeProvider = new FakeTimeProvider();
+        var pipeline = SqlResilienceDefaults.Standard(_detector, timeProvider: timeProvider);
+        const int concurrentOperations = 50;
+
+        var tasks = Enumerable.Range(0, concurrentOperations).Select(async i =>
+        {
+            await Task.Yield();
+            return await pipeline.ExecuteAsync(async ct =>
+            {
+                await Task.Yield();
+                return i * 2;
+            }, CancellationToken.None);
+        });
+
+        var results = await Task.WhenAll(tasks);
+        results.Length.Should().Be(concurrentOperations);
+        for (int i = 0; i < concurrentOperations; i++)
+        {
+            results[i].Should().Be(i * 2);
+        }
+    }
+
+    [Fact]
+    public async Task Standard_Pipeline_UnderConcurrentRetries_ResolvesAllOperationsDeterministically()
+    {
+        var timeProvider = new FakeTimeProvider();
+        var pipeline = SqlResilienceDefaults.Standard(_detector, timeProvider: timeProvider);
+        const int concurrentOperations = 25;
+        var attemptCounts = new int[concurrentOperations];
+
+        var tasks = Enumerable.Range(0, concurrentOperations).Select(async i =>
+        {
+            await Task.Yield();
+            return await pipeline.ExecuteAsync(async ct =>
+            {
+                await Task.Yield();
+                attemptCounts[i]++;
+                if (attemptCounts[i] < 2)
+                    throw new TestDbException("transient concurrent deadlock", errorCode: 1205);
+                return $"Success_{i}";
+            }, CancellationToken.None);
+        });
+
+        var resultsTask = Task.WhenAll(tasks);
+        timeProvider.Advance(TimeSpan.FromSeconds(10));
+        var results = await resultsTask;
+
+        results.Length.Should().Be(concurrentOperations);
+        for (int i = 0; i < concurrentOperations; i++)
+        {
+            results[i].Should().Be($"Success_{i}");
+            attemptCounts[i].Should().Be(2);
+        }
     }
 }

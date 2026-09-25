@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using AwesomeAssertions;
+using Dapper;
 using EricksonLopez.DapperExtensions.PostgreSql.TypeHandlers;
 using Npgsql;
 using NpgsqlTypes;
@@ -97,10 +98,29 @@ public sealed class JsonbTypeHandlerTests
     }
 
     [Fact]
-    public void NpgsqlTypeHandlerRegistrar_RegisterJsonbHandler_ShouldNotThrow()
+    public void Parse_WithMalformedJson_ThrowsJsonException()
     {
-        var act = () => NpgsqlTypeHandlerRegistrar.RegisterJsonbHandler<TestData>();
-        act.Should().NotThrow();
+        var handler = new JsonbTypeHandler<TestData>();
+        var malformedJson = "{invalid-json-payload";
+
+        var act = () => handler.Parse(malformedJson);
+
+        act.Should().Throw<System.Text.Json.JsonException>();
+    }
+
+    private sealed record RegisteredItem(string Code);
+
+    [Fact]
+    public void NpgsqlTypeHandlerRegistrar_RegisterJsonbHandler_RegistersInSqlMapper()
+    {
+        NpgsqlTypeHandlerRegistrar.RegisterJsonbHandler<RegisteredItem>();
+        using var connection = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=:memory:");
+        connection.Open();
+        var item = new RegisteredItem("PG_JSONB");
+        var parameters = new DynamicParameters();
+        parameters.Add("item", item);
+        var json = connection.ExecuteScalar<string>("SELECT @item", parameters);
+        json.Should().Contain("\"code\":\"PG_JSONB\"");
     }
 }
 

@@ -15,7 +15,7 @@ namespace EricksonLopez.DapperExtensions.MultiMap;
 /// outside of <see cref="MultiMapBuilder{TReturn}"/>.
 /// </para>
 /// <para>
-/// <see cref="MultiMapBuilder{TReturn}"/> does <b>not</b> use this class internally; it manages
+/// <see cref="MultiMapBuilder{TReturn}"/> does <b>not</b> use this descriptor internally; it manages
 /// mappings as lightweight anonymous tuples for performance. Consumers who need a typed,
 /// inspectable mapping descriptor can construct a <see cref="MultiMapDescriptor"/> alongside
 /// a <see cref="MultiMapBuilder{TReturn}"/> invocation.

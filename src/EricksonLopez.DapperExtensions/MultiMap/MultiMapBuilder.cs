@@ -17,8 +17,17 @@ namespace EricksonLopez.DapperExtensions.MultiMap;
 /// </summary>
 /// <typeparam name="TReturn">The root entity type to map.</typeparam>
 /// <remarks>
-/// Supports up to 7 mapped entities using source-generated <see cref="IDataReaderMapper{T}"/> parsers for Native AOT environments.
-/// When reflection fallback is used, mapping is not Native AOT compatible.
+/// <para>
+/// This builder supports any number of mapped entity types. When all entity types are annotated with
+/// <c>[SqlEntity]</c> and the <c>EricksonLopez.DapperExtensions.SourceGenerators</c> package is referenced,
+/// the AOT-safe path uses source-generated <see cref="IDataReaderMapper{T}"/> parsers, avoiding all
+/// runtime reflection and achieving full Native AOT compatibility.
+/// </para>
+/// <para>
+/// When one or more entity types do not have a source-generated parser, the builder falls back to
+/// Dapper's reflection-based <c>QueryAsync</c> overload (via the <c>object[]</c> types array), which
+/// does not impose a fixed maximum on the number of mapped types. This fallback path is not Native AOT safe.
+/// </para>
 /// </remarks>
 public sealed class MultiMapBuilder<TReturn> where TReturn : class, new()
 {
@@ -66,14 +75,7 @@ public sealed class MultiMapBuilder<TReturn> where TReturn : class, new()
         ArgumentException.ThrowIfNullOrEmpty(splitOn);
         ArgumentNullException.ThrowIfNull(combiner);
 
-        if (parser == null)
-        {
-            var factoryMethod = typeof(T).GetMethod("GetMultiMapReaderFactory", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-            if (factoryMethod != null)
-            {
-                parser = (Func<System.Data.IDataReader, object>)factoryMethod.Invoke(null, null)!;
-            }
-        }
+        parser ??= MultiMapParserCache<T>.Parser;
 
         _mappings.Add((typeof(T), splitOn, parser));
         _combiners.Add((parts, root) =>
@@ -129,6 +131,11 @@ public sealed class MultiMapBuilder<TReturn> where TReturn : class, new()
             return types;
         }
     }
+
+    /// <summary>
+    /// Gets the registered entity combiner delegates utilized during internal pipeline validation.
+    /// </summary>
+    internal IReadOnlyList<Func<object[], TReturn, TReturn>> Combiners => _combiners;
 
     /// <summary>
     /// Executes the multi-map query and returns an enumerable of hydrated root entities.
@@ -198,12 +205,11 @@ public sealed class MultiMapBuilder<TReturn> where TReturn : class, new()
         }
 
         // AOT-safe manual parsing
-        var rootFactoryMethod = typeof(TReturn).GetMethod("GetMultiMapReaderFactory", BindingFlags.Public | BindingFlags.Static);
-        if (rootFactoryMethod == null)
+        var rootParser = MultiMapParserCache<TReturn>.Parser;
+        if (rootParser == null)
         {
             throw new InvalidOperationException("Root type " + typeof(TReturn).Name + " is missing GetMultiMapReaderFactory(). Ensure it is decorated with [SqlEntity].");
         }
-        var rootParser = (Func<IDataReader, object>)rootFactoryMethod.Invoke(null, null)!;
 
         var parsers = new Func<IDataReader, object>[_mappings.Count + 1];
         parsers[0] = rootParser;
@@ -322,12 +328,11 @@ public sealed class MultiMapBuilder<TReturn> where TReturn : class, new()
         }
 
         // AOT-safe manual parsing
-        var rootFactoryMethod = typeof(TReturn).GetMethod("GetMultiMapReaderFactory", BindingFlags.Public | BindingFlags.Static);
-        if (rootFactoryMethod == null)
+        var rootParser = MultiMapParserCache<TReturn>.Parser;
+        if (rootParser == null)
         {
             throw new InvalidOperationException("Root type " + typeof(TReturn).Name + " is missing GetMultiMapReaderFactory(). Ensure it is decorated with [SqlEntity].");
         }
-        var rootParser = (Func<IDataReader, object>)rootFactoryMethod.Invoke(null, null)!;
 
         var parsers = new Func<IDataReader, object>[_mappings.Count + 1];
         parsers[0] = rootParser;

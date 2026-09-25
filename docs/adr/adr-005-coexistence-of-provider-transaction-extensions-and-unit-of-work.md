@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+## Date
+2026-09-04
+
 ## Context
 Across all 6 database dialect provider packages (`PostgreSQL`, `SqlServer`, `MySql`, `MariaDB`, `Oracle`, `Sqlite`), `TransactionExtensions.ExecuteInTransactionAsync` methods provide lightweight transaction scoping directly on `DbConnection`.
 

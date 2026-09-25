@@ -6,7 +6,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>EricksonLopez.DapperExtensions.PostgreSql</PackageId>
     <Description>High-performance Dapper extensions for PostgreSQL. Bulk insert and upsert via UNNEST (10-50x faster than row-by-row), paginated queries returning PagedList&lt;T&gt;, transaction helpers, and JSONB type handler. Designed for enterprise .NET applications using Clean Architecture.</Description>
-    <PackageTags>$(CommonPackageTags);postgresql;npgsql;postgres;bulk-insert;upsert;unnest;pagination;jsonb</PackageTags>
+    <PackageTags>$(CommonPackageTags);postgresql;npgsql;bulk-insert;upsert;unnest;pagination;jsonb</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

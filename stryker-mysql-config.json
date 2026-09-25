@@ -4,6 +4,7 @@
     "test-projects": [
       "EricksonLopez.DapperExtensions.MySql.Tests.csproj"
     ],
+    "test-case-filter": "Category!=Integration",
     "mutate": [
       "**/*.cs",
       "!bin/**",
@@ -24,9 +25,8 @@
     ],
     "ignore-methods": [
       "ConfigureAwait",
-      "*ConfigureAwait",
-      "Dispose",
-      "DisposeAsync"
-    ]
+      "*ConfigureAwait"
+    ],
+    "concurrency": 2
   }
 }

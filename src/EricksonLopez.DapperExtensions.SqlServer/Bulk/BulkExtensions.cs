@@ -27,13 +27,33 @@ public static class BulkExtensions
     /// <returns>A task representing the asynchronous operation. The task result contains the number of rows copied to the destination table.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="connection"/> or <paramref name="dataTable"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException"><paramref name="destinationTableName"/> is empty or whitespace, or <paramref name="connection"/> is not a <see cref="SqlConnection"/></exception>
-    public static async Task<int> BulkInsertAsync(
+    public static Task<int> BulkInsertAsync(
         this DbConnection connection,
         string destinationTableName,
         DataTable dataTable,
         DbTransaction? transaction = null,
         int batchSize = 0,
         int bulkCopyTimeout = 30,
+        CancellationToken cancellationToken = default)
+        => BulkInsertInternalAsync(
+            connection,
+            destinationTableName,
+            dataTable,
+            transaction,
+            batchSize,
+            bulkCopyTimeout,
+            executor: null,
+            cancellationToken);
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Internal bulk copy test hook requires executor parameter alongside ADO.NET and cancellation configuration.")]
+    internal static async Task<int> BulkInsertInternalAsync(
+        this DbConnection connection,
+        string destinationTableName,
+        DataTable dataTable,
+        DbTransaction? transaction = null,
+        int batchSize = 0,
+        int bulkCopyTimeout = 30,
+        Func<SqlConnection, string, DataTable, SqlTransaction?, int, int, CancellationToken, Task<int>>? executor = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connection);
@@ -43,7 +63,9 @@ public static class BulkExtensions
         if (dataTable.Rows.Count == 0)
             return 0;
 
-        if (connection is not SqlConnection && BulkCopyExecutor == DefaultBulkCopyExecutor)
+        var effectiveExecutor = executor ?? DefaultBulkCopyExecutor;
+
+        if (connection is not SqlConnection && executor == null)
             throw new ArgumentException(
                 $"Connection must be a {nameof(SqlConnection)}. Got: {connection.GetType().Name}",
                 nameof(connection));
@@ -51,17 +73,25 @@ public static class BulkExtensions
         var sqlConnection = connection as SqlConnection;
         SqlTransaction? sqlTransaction = transaction as SqlTransaction;
 
-        if (connection.State != ConnectionState.Open)
+        bool wasClosed = connection.State == ConnectionState.Closed;
+        if (wasClosed)
             await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        return await BulkCopyExecutor(
-            sqlConnection!,
-            destinationTableName,
-            dataTable,
-            sqlTransaction,
-            batchSize,
-            bulkCopyTimeout,
-            cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await effectiveExecutor(
+                sqlConnection!,
+                destinationTableName,
+                dataTable,
+                sqlTransaction,
+                batchSize,
+                bulkCopyTimeout,
+                cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (wasClosed) await connection.CloseAsync().ConfigureAwait(false);
+        }
     }
 
     internal static readonly Func<SqlConnection, string, DataTable, SqlTransaction?, int, int, CancellationToken, Task<int>> DefaultBulkCopyExecutor =
@@ -70,9 +100,6 @@ public static class BulkExtensions
             var bulkCopy = CreateSqlBulkCopy(sqlConnection, sqlTransaction, destinationTableName, dataTable, batchSize, bulkCopyTimeout);
             return ExecuteSqlBulkCopyAsync(bulkCopy, dataTable, cancellationToken);
         };
-
-    internal static Func<SqlConnection, string, DataTable, SqlTransaction?, int, int, CancellationToken, Task<int>> BulkCopyExecutor =
-        DefaultBulkCopyExecutor;
 
     internal static SqlBulkCopy CreateSqlBulkCopy(
         SqlConnection connection,
@@ -100,17 +127,16 @@ public static class BulkExtensions
             return dataTable.Rows.Count;
         };
 
-    internal static Func<SqlBulkCopy, DataTable, CancellationToken, Task<int>> BulkCopyWriter =
-        DefaultBulkCopyWriter;
-
     internal static async Task<int> ExecuteSqlBulkCopyAsync(
         SqlBulkCopy bulkCopy,
         DataTable dataTable,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<SqlBulkCopy, DataTable, CancellationToken, Task<int>>? writer = null)
     {
         using (bulkCopy)
         {
-            return await BulkCopyWriter(bulkCopy, dataTable, cancellationToken).ConfigureAwait(false);
+            var effectiveWriter = writer ?? DefaultBulkCopyWriter;
+            return await effectiveWriter(bulkCopy, dataTable, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -137,8 +163,8 @@ public static class BulkExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentException.ThrowIfNullOrWhiteSpace(sql);
 
-        if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        // Dapper internally manages connection state (open/close) automatically.
+        // We defer to SqlMapper.ExecuteAsync for correct connection lifecycle.
 
         var command = new Dapper.CommandDefinition(
             sql,
@@ -175,8 +201,8 @@ public static class BulkExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentException.ThrowIfNullOrWhiteSpace(sql);
 
-        if (connection.State != ConnectionState.Open)
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        // Dapper internally manages connection state (open/close) automatically.
+        // We defer to SqlMapper.ExecuteAsync for correct connection lifecycle.
 
         var command = new Dapper.CommandDefinition(
             sql,

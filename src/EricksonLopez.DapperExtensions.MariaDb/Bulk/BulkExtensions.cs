@@ -108,3 +108,4 @@ public static class BulkExtensions
         CancellationToken cancellationToken = default)
         => connection.BulkInsertAsync(sql, parameters, transaction, commandTimeout, cancellationToken);
 }
+

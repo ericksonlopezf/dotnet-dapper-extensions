@@ -49,7 +49,8 @@ public sealed class OrderAppService
 
     public async Task PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
     {
-        var pipeline = SqlResilienceDefaults.ForPostgreSql();
+        // Use IResiliencePipeline canonical API (ADR-017)
+        var pipeline = SqlResilienceDefaults.ForPostgreSqlPipeline();
 
         // ADR-016: Polly resilience wraps the entire transactional unit
         await pipeline.ExecuteAsync(async ct =>
@@ -257,7 +258,7 @@ public static async Task BulkCopyCustomersAsync(
         destinationTableName: "dbo.customers", 
         dataTable: dataTable, 
         batchSize: 5000, 
-        timeoutSeconds: 60);
+        bulkCopyTimeout: 60);
 }
 ```
 
