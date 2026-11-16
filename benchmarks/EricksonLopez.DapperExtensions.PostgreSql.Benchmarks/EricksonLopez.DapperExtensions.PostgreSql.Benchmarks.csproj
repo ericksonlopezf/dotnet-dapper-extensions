@@ -9,6 +9,7 @@
     <PackageReference Include="Dapper" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="11.0.0" />
     <PackageReference Include="Npgsql" />
   </ItemGroup>
 
